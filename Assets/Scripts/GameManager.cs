@@ -46,7 +46,16 @@ public class GameManager : MonoBehaviour
             deck.ShuffleDeck();
         }
         Card newCard = deck.Deal();
+        player.AddToHand(newCard);
 
+    }
+    public void UpdateCardValues()
+    {
+        List<List<Card>> playerHand = player.GetHand();
+        for(int handIndex = 0; handIndex < playerHand.Count; handIndex++)
+        {
+
+        }
     }
 
 }

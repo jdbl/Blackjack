@@ -22,10 +22,9 @@ public class PlayerController : MonoBehaviour
         hand.Add(new List<Card>());
     }
 
-    // Update is called once per frame
-    void Update()
+    public List<List<Card>> GetHand()
     {
-        
+        return hand;
     }
 
     public void PlaceBet()
