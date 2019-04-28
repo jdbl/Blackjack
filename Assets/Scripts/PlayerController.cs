@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     private int cardIndex = 0;
     private int handIndex = 0;
     private int handCount = 0;
+    private List<int> handValues = new List<int>();
     // Start is called before the first frame update
     void Start()
     {
@@ -41,6 +42,21 @@ public class PlayerController : MonoBehaviour
     {
 
         hand[handIndex][cardIndex] = newCard;
+        if(newCard.faceValue != 1)
+        {
+            handValues[handIndex] += hand[handIndex][cardIndex].faceValue;
+        }
+        else if((handValues[handIndex] + 11 > 21 && (hand[handIndex].Contains(new Card(1, Card.SPADE)) || 
+            hand[handIndex].Contains(new Card(1, Card.CLUB)) ||
+            hand[handIndex].Contains(new Card(1, Card.HEART)) ||
+            hand[handIndex].Contains(new Card(1, Card.DIAMOND)))))
+        {
+            
+        }
+        else if(handValues[handIndex] + 11 > 21)
+        {
+            handValues[handIndex] += 1;
+        }
         cardIndex++;
 
     }

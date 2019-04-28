@@ -54,7 +54,10 @@ public class GameManager : MonoBehaviour
         List<List<Card>> playerHand = player.GetHand();
         for(int handIndex = 0; handIndex < playerHand.Count; handIndex++)
         {
-
+            for(int cardIndex = 0; cardIndex > playerHand[handIndex].Count; cardIndex++)
+            {
+                playerHand[handIndex][cardIndex].faceValue;
+            }
         }
     }
 
