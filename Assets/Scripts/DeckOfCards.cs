@@ -10,17 +10,29 @@ using UnityEngine;
 /// Needs to remember which cards are in play during shuffle
 public class DeckOfCards : MonoBehaviour
 {
-    private int numberOfCards = 52 * GameManager.DeckNumbers;
+    [SerializeField]
+    private GameObject[] deckPrefabs;
+
+    private int numberOfCards = 52 * GameManager.deckNumbers;
     private List<Card> deck = new List<Card>();
 
     public void BuildDeck()
     {
-        for(int suitIndex = Card.SPADE; suitIndex <= Card.DIAMOND * GameManager.DeckNumbers; suitIndex++  )
+        deck.Clear();
+        for (int suitIndex = Card.SPADE; suitIndex <= Card.DIAMOND * GameManager.deckNumbers; suitIndex++  )
         {
             for(int cardFace = 1; cardFace <= 13; cardFace++)
             {
-                deck.Clear();
-                deck.Add(new Card(cardFace, suitIndex % Card.DIAMOND * GameManager.DeckNumbers));
+                
+                if(cardFace < 10)
+                {
+                    deck.Add(new Card(cardFace, suitIndex % Card.DIAMOND * GameManager.deckNumbers, deckPrefabs[((13*(suitIndex-1))+(cardFace-1))]));
+                }
+                else
+                {
+                    deck.Add(new Card(10, suitIndex % Card.DIAMOND * GameManager.deckNumbers, deckPrefabs[((13 * (suitIndex-1)) + (cardFace-1))]));
+                }
+                
             }
         }
     }
@@ -29,14 +41,15 @@ public class DeckOfCards : MonoBehaviour
         System.Random random = new System.Random();
         int currentCount = deck.Count;
         
-        for(int index = deck.Count -1; index > 1; index++)
+        for(int index = deck.Count -1; index > 1; index--)
         {
             int randomNumber = random.Next(index + 1);
 
             Card value = deck[randomNumber];
+            deck[randomNumber] = deck[index];
             deck[index] = value;
+            
         }
-
     }
 
     public Card Deal()
@@ -49,5 +62,10 @@ public class DeckOfCards : MonoBehaviour
     public int GetDeckSize()
     {
         return deck.Count;
+    }
+    
+    public GameObject[] GetDeckPrefabs()
+    {
+        return deckPrefabs;
     }
 }
