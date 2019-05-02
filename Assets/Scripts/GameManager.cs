@@ -11,23 +11,41 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private PlayerController player;
     [SerializeField]
+    private DealerController dealer;
+    [SerializeField]
     private Canvas mainCanvas;
     [SerializeField]
     private DeckOfCards deck;
+    [SerializeField]
+    private Text playerHandText;
+    [SerializeField]
+    private Text dealerHandText;
+    [SerializeField]
+    private Button betButton;
+    [SerializeField]
+    private Button standButton;
+    [SerializeField]
+    private Button splitButton;
+    [SerializeField]
+    private Button hitButton;
 
     private List<Text> playerHandValuesText;
     public static int deckNumbers = 1;
-    private bool playing = false;
-    
+    private bool playerTurn = true;
+
     
 
     // Start is called before the first frame update
     void Start()
     {
+
         deck.BuildDeck();
         deck.ShuffleDeck();
         player.ResetHand();
         playerHandValuesText = new List<Text>();
+        standButton.interactable = false;
+        splitButton.interactable = false;
+        hitButton.interactable = false;
     }
 
     // Update is called once per frame
@@ -38,14 +56,44 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        playing = true;
+        
     }
 
     private void UpdateBetText()
     {
         betText.text = betSlider.value.ToString();
     }
-    
+
+    public void DealGame()
+    {
+        ResetGame();
+        betSlider.interactable = false;
+        betButton.interactable = false;
+        standButton.interactable = true;
+        hitButton.interactable = true;
+        for (int index = 0; index <= 3; index++)
+        {
+            if (deck.GetDeckSize() <= (52 * deckNumbers / 2))
+            {
+                deck.BuildDeck();
+                deck.ShuffleDeck();
+            }
+            Card newCard = deck.Deal();
+            int temp = index % 2;
+            if(index % 2 == 0)
+            {
+                player.AddToHand(newCard);
+            }
+            else
+            {
+                dealer.AddToHand(newCard);
+            }
+            
+            
+        }
+        UpdateCardValues();
+    }
+
     public void Deal()
     {
         if(deck.GetDeckSize() <= (52*deckNumbers/2))
@@ -54,32 +102,102 @@ public class GameManager : MonoBehaviour
             deck.ShuffleDeck();
         }
         Card newCard = deck.Deal();
-        player.AddToHand(newCard);
+        if(playerTurn)
+        {
+            player.AddToHand(newCard);
+        }
+        else
+        {
+            dealer.AddToHand(newCard);
+        }
+        
         UpdateCardValues();
     }
-    private void UpdateCardValues()
+
+    public void UpdateCardValues()
     {
         foreach(Text tempText in playerHandValuesText)
         {
             Destroy(tempText.gameObject);
         }
+
         playerHandValuesText.Clear();
-        int loopCounter = 0;
-        foreach(int value in player.GetHandValues())
+
+        playerHandText.text = "Player: ";
+
+
+        for (int index = 0; index < player.GetHandValues().Count; index++)
         {
-            GameObject tempObject = new GameObject("HandValue");
-            tempObject.transform.SetParent(mainCanvas.transform);
-            tempObject.layer = mainCanvas.gameObject.layer;
-            tempObject.transform.position = new Vector3(400.0f, 200.0f, 0.0f);
-            Text tempText = tempObject.AddComponent<Text>();
+            int value = player.GetHandValues()[index];
+            if(value > 21)
+            {
+                playerHandText.text += System.Environment.NewLine +
+                value.ToString() + " BUST";
 
-            tempText.text = value.ToString();
-            tempText.font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+            }
+            else if(value == 21 && player.GetHand()[index].Count == 2)
+            {
+                playerHandText.text += System.Environment.NewLine +
+                value.ToString() + " BLACKJACK";
 
+            }
+            else
+            {
+                playerHandText.text += System.Environment.NewLine +
+                value.ToString();
+            }
 
-            playerHandValuesText.Add(tempText);
-            loopCounter++;
+        }
+        if (player.GetHandFinished()[player.GetHandCount()] == true)
+        {
+            standButton.interactable = false;
+            splitButton.interactable = false;
+            hitButton.interactable = false;
+            ChangePlayerTurn();
         }
     }
 
+
+    public void ChangePlayerTurn()
+    {
+        if(playerTurn)
+        {
+            playerTurn = false;
+            PlayDealer();
+        }
+        else
+        {
+            playerTurn = true;
+        }
+    }
+
+    private void PlayDealer()
+    {
+        dealer.FlipCard();
+        while (!dealer.GetHandFinished() )
+        {
+            Deal();
+        }
+        CalculateWinnings();
+        betButton.interactable = true;
+    }
+    private void ResetGame()
+    {
+        betSlider.interactable = true;
+        betButton.interactable = true;
+        player.ResetHand();
+        dealer.ResetHand();
+
+    }
+
+    private void CalculateWinnings()
+    {
+        for(int index = 0; index < player.GetHandValues().Count; index++ )
+        {
+            if(player.GetHandValues()[index] == dealer.GetHandValue() )
+            {
+                player.SetCredit(player.GetCredit() + player.GetBets()[index]);
+            }
+        }
+    }
 }

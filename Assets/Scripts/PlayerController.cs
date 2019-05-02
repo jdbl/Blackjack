@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private Slider BetSlider;
     [SerializeField]
-    private int Bet = 0;
+    private List<int> bets = new List<int>();
     [SerializeField]
     private List<List<Card>> hand = new List<List<Card>>();
 
@@ -18,12 +18,15 @@ public class PlayerController : MonoBehaviour
     private int handIndex = 0;
     private int handCount = 0;
     private List<int> handValues = new List<int>();
-    private List<bool> bust = new List<bool>();
+    private bool[] handFinished = { false, false, false, false };
+    private bool finishTurn = false;
+    private int credit = 0;
+    private List<List<GameObject>> handPrefabs = new List<List<GameObject>>();
     // Start is called before the first frame update
     void Start()
     {
         hand.Add(new List<Card>());
-        bust.Add(false);
+
     }
 
     public List<List<Card>> GetHand()
@@ -37,12 +40,14 @@ public class PlayerController : MonoBehaviour
 
     public void PlaceBet()
     {
-        Bet = (int) BetSlider.value;
-        
+        bets.Add((int) BetSlider.value);
+        credit -= (int)BetSlider.value;
+
+
     }
-    public int GetBet()
+    public List<int> GetBets()
     {
-        return Bet;
+        return bets;
     }
 
     public void AddToHand(Card newCard)
@@ -93,19 +98,22 @@ public class PlayerController : MonoBehaviour
             handValues[handIndex] += newCard.GetFaceValue();
         }
 
-        if(handValues[handIndex] > 21)
+        if(handValues[handIndex] >= 21)
         {
-            bust[handIndex] = true;
+            handFinished[handIndex] = true;
+            NextSplitHand();
         }
+
         cardIndex++;
 
     }
 
     private void DisplayCard(Card newCard)
     {
-        GameObject temp = Instantiate(newCard.GetPrefab(), this.transform);
-        temp.transform.localScale = new Vector3(38.0f, 38.0f, 1.0f);
-        temp.transform.localRotation = new Quaternion(180.0f, 0.0f, 0.0f, 0.0f);
+        //if (handPrefabs.Add(new List<GameObject>())) 
+        handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform));
+        handPrefabs[handIndex][handPrefabs[handIndex].Count].transform.SetPositionAndRotation(new Vector3((float)hand[handIndex].Count, -3.0f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+        handPrefabs[handIndex][handPrefabs[handIndex].Count].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
     }
 
     public void Split()
@@ -117,23 +125,59 @@ public class PlayerController : MonoBehaviour
         
         handCount++;
     }
-
+    public int GetHandCount()
+    {
+        return handCount;
+    }
 
     public void ResetHand()
     {
         hand.Clear();
-        bust.Clear();
-        bust.Add(false);
+        handFinished = new bool[] { false, false, false, false };
         cardIndex = 0;
         handIndex = 0;
         handCount = 0;
         handValues.Clear();
         handValues.Add(0);
+        bets.Clear();
+        try
+        {
+            foreach (List<GameObject> tempList in handPrefabs)
+            {
+                foreach (GameObject temp in tempList)
+                {
+                    Destroy(temp);
+                }
+            }
+            handPrefabs.Clear();
+        }
+        catch
+        { }
+        
     }
     public void NextSplitHand()
     {
+        handFinished[handIndex] = true;
         handIndex++;
-        cardIndex = 0;
+        cardIndex = 0; 
     }
-    
+
+
+    public bool[] GetHandFinished()
+    {
+        return handFinished;
+    }
+
+    public int GetCredit()
+    {
+        return credit;
+    }
+    public void SetCredit(int _credit)
+    {
+        this.credit = _credit;
+    }
+    public void RemoveHand()
+    {
+        
+    }
 }
