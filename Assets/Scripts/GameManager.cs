@@ -125,7 +125,14 @@ public class GameManager : MonoBehaviour
                 dealer.AddToHand(newCard);
             }
         }
-
+        if(player.Splitable())
+        {
+            splitButton.interactable = true;
+        }
+        else
+        {
+            splitButton.interactable = false;
+        }
         UpdateCardValues();
 
     }
@@ -145,7 +152,15 @@ public class GameManager : MonoBehaviour
         {
             dealer.AddToHand(newCard);
         }
-        
+
+        if (player.Splitable())
+        {
+            splitButton.interactable = true;
+        }
+        else
+        {
+            splitButton.interactable = false;
+        }
         UpdateCardValues();
     }
 
@@ -213,11 +228,9 @@ public class GameManager : MonoBehaviour
         {
             playerTurn = false;
             PlayDealer();
-        }
-        else
-        {
             playerTurn = true;
         }
+
     }
 
     /// <summary>
@@ -236,6 +249,7 @@ public class GameManager : MonoBehaviour
         }
         CalculateWinnings();
         betButton.interactable = true;
+        betSlider.interactable = true;
         ChangePlayerTurn();
     }
 
@@ -262,16 +276,20 @@ public class GameManager : MonoBehaviour
             {
                 player.SetCredit(player.GetCredit() + player.GetBets()[index]);
             }
-            else if(player.GetHandValues()[index] > dealer.GetHandValue() && player.GetHandValues()[index] <21)
+            else if (player.GetHandValues()[index] == 21 && player.GetHand()[index].Count == 2)
+            {
+                player.SetCredit((float)System.Math.Round(player.GetCredit() + player.GetBets()[index] * 2.5f, 2));
+
+            }
+            else if(player.GetHandValues()[index] > dealer.GetHandValue() && player.GetHandValues()[index] <=21)
             {
                 player.SetCredit(player.GetCredit() + (player.GetBets()[index]) * 2);
             }
-            else if(player.GetHandValues()[index] == 21 && player.GetHand()[index].Count == 2)
+            else if(player.GetHandValues()[index] <= 21 && dealer.GetHandValue() > 21)
             {
-                float i = (float)(player.GetCredit() + player.GetBets()[index] * 2.5f);
-                player.SetCredit((float)System.Math.Round(player.GetCredit() + player.GetBets()[index] * 2.5f, 2));
-                
+                player.SetCredit(player.GetCredit() + (player.GetBets()[index]) * 2);
             }
+            
         }
         creditText.text = "Credit: " + player.GetCredit().ToString();
     }
@@ -286,6 +304,14 @@ public class GameManager : MonoBehaviour
             hitButton.interactable = false;
             ChangePlayerTurn();
         }
+        if (player.Splitable())
+        {
+            splitButton.interactable = true;
+        }
+        else
+        {
+            splitButton.interactable = false;
+        }
     }
     public void Hit()
     {
@@ -296,6 +322,18 @@ public class GameManager : MonoBehaviour
             splitButton.interactable = false;
             hitButton.interactable = false;
             ChangePlayerTurn();
+        }
+    }
+    public void Split()
+    {
+        player.Split(deck.Deal(), deck.Deal());
+        if (player.Splitable())
+        {
+            splitButton.interactable = true;
+        }
+        else
+        {
+            splitButton.interactable = false;
         }
     }
 }

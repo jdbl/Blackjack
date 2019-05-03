@@ -163,7 +163,8 @@ public class PlayerController : MonoBehaviour
         temp.transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
          */
         handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform));
-        handPrefabs[handIndex][handPrefabs[handIndex].Count-1].transform.SetPositionAndRotation(new Vector3((float)hand[handIndex].Count, -3.0f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+        handPrefabs[handIndex][handPrefabs[handIndex].Count-1].transform.SetPositionAndRotation(new Vector3((float)hand[handIndex].Count-1, 
+            -3.25f + ((handIndex) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
         handPrefabs[handIndex][handPrefabs[handIndex].Count-1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
         
     }
@@ -171,13 +172,27 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// Splits 2 card hand into 2 seperate hands. Max 4
     /// </summary>
-    public void Split()
+    public void Split(Card newCard1, Card newCard2)
     {
         hand.Add(new List<Card>());
-        hand[handIndex+1].Add(hand[handIndex][cardIndex]);
-        handValues[handIndex + 1] = hand[handIndex][1].GetFaceValue();
+        hand[handIndex + 1].Add(hand[handIndex][1]);
         hand[handIndex].RemoveAt(1);
-        
+        hand[handIndex].Add(newCard1);
+        hand[handIndex + 1].Add(newCard2);
+
+        handValues[handIndex] = hand[handIndex][0].GetFaceValue() + hand[handIndex][1].GetFaceValue();
+        handValues.Add(hand[handIndex + 1][0].GetFaceValue() + hand[handIndex + 1][1].GetFaceValue());
+
+        handPrefabs.Add(new List<GameObject>());
+        handPrefabs[handIndex + 1].Add(handPrefabs[handIndex][1]);
+        handPrefabs[handIndex].RemoveAt(1);
+        handPrefabs[handIndex].Add(Instantiate(newCard1.GetPrefab(), this.transform));
+        handPrefabs[handIndex + 1].Add(Instantiate(newCard2.GetPrefab(), this.transform));
+        handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.SetPositionAndRotation(new Vector3((float)hand[handIndex].Count - 1,
+            -3.25f + ((handIndex) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+        handPrefabs[handIndex + 1][handPrefabs[handIndex + 1].Count - 1].transform.SetPositionAndRotation(new Vector3((float)hand[handIndex + 1].Count - 1,
+            -3.25f + ((handIndex + 1) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+
         handCount++;
     }
 
@@ -262,5 +277,23 @@ public class PlayerController : MonoBehaviour
     public void SetCredit(float _credit)
     {
         this.credit = _credit;
+    }
+
+    /// <summary>
+    /// Determines if current hand can be split.
+    /// </summary>
+    /// <returns></returns>
+    public bool Splitable()
+    {
+       
+        if (hand.Count > handIndex && hand[handIndex].Count == 2 && hand[handIndex][0].GetFaceValue() == hand[handIndex][1].GetFaceValue())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+   
     }
 }

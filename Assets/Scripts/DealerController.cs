@@ -142,6 +142,7 @@ public class DealerController : MonoBehaviour
         hand.Clear();
         handFinished = false;
         handValue = 0;
+        cardCount = 0;
         try
         {
             foreach (GameObject temp in handPrefabs)
