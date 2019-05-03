@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Individual cards to be dealt out.
+/// </summary>
 public class Card
 {
     public const int SPADE = 1;
@@ -18,10 +21,13 @@ public class Card
         this.suit = _suit;
         this.prefab = _prefab;
     }
-    
+    /// <summary>
+    /// Change the value of an ace from depending on need
+    /// </summary>
     public void ChangeAceFaceValue()
     {
-        if(faceValue == 1)
+        
+        if (faceValue == 1)
         {
             faceValue = 11;
         }
@@ -31,14 +37,28 @@ public class Card
         }
     }
     
+    /// <summary>
+    /// Return Card's suit
+    /// </summary>
+    /// <returns>int</returns>
     public int GetSuit()
     {
         return suit;
     }
+
+    /// <summary>
+    /// Return Card's Face Value
+    /// </summary>
+    /// <returns>int</returns>
     public int GetFaceValue()
     {
         return faceValue;
     }
+
+    /// <summary>
+    /// Return Card's Prefab
+    /// </summary>
+    /// <returns>GameObject</returns>
     public GameObject GetPrefab()
     {
         return prefab;

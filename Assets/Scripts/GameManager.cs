@@ -2,8 +2,46 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
+
+/// <summary>
+/// Controls main game functionality. 
+/// </summary>
+/// 
+
+    
 public class GameManager : MonoBehaviour
 {
+    /*
+        This class provides services related to all aspects of the game. It controls the shuffle and dealing.
+        It also controls player turns and available actions on the UI
+
+        Public Methods:
+            DealGame()
+            Deal()
+            UpdateCardValues()
+            ChangePlayerTurn()
+
+        Private Methods:
+            UpdateBetText()
+            PlayDealer()
+            ResetGame()
+            CalculateWinnings()
+
+        Public Properties:
+            deckNumbers: (Read only, static, int)
+        
+  
+
+   Public Properties:
+      MailSubject:         (Write only, String)
+      MailMessage:         (Write only, String)
+      MailAttachments:   (Write only, String)
+
+   Usage:   All game controlling methods and play tracking is done here. 
+           Starting the game, changing the players, turn, resetting and ending the game. 
+
+    */
     [SerializeField]
     private Slider betSlider;
     [SerializeField]
@@ -28,6 +66,8 @@ public class GameManager : MonoBehaviour
     private Button splitButton;
     [SerializeField]
     private Button hitButton;
+    [SerializeField]
+    private Text creditText;
 
     private List<Text> playerHandValuesText;
     public static int deckNumbers = 1;
@@ -38,46 +78,42 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
         deck.BuildDeck();
         deck.ShuffleDeck();
+        player.SetCredit(100);
         player.ResetHand();
         playerHandValuesText = new List<Text>();
+        creditText.text = "Credit: " + player.GetCredit().ToString();
         standButton.interactable = false;
         splitButton.interactable = false;
         hitButton.interactable = false;
     }
 
-    // Update is called once per frame
-    void Update()
+  
+
+    /// <summary>
+    /// Update user bet on display
+    /// </summary>
+    public void UpdateBetText()
     {
-        UpdateBetText();
+        betText.text = System.Math.Round(betSlider.value, 2).ToString();
     }
 
-    public void StartGame()
-    {
-        
-    }
-
-    private void UpdateBetText()
-    {
-        betText.text = betSlider.value.ToString();
-    }
-
+    /// <summary>
+    /// First deal of the game.
+    /// </summary>
     public void DealGame()
     {
         ResetGame();
         betSlider.interactable = false;
         betButton.interactable = false;
+        player.PlaceBet();
         standButton.interactable = true;
         hitButton.interactable = true;
+        deck.BuildDeck();
+        deck.ShuffleDeck();
         for (int index = 0; index <= 3; index++)
         {
-            if (deck.GetDeckSize() <= (52 * deckNumbers / 2))
-            {
-                deck.BuildDeck();
-                deck.ShuffleDeck();
-            }
             Card newCard = deck.Deal();
             int temp = index % 2;
             if(index % 2 == 0)
@@ -88,23 +124,22 @@ public class GameManager : MonoBehaviour
             {
                 dealer.AddToHand(newCard);
             }
-            
-            
         }
+
         UpdateCardValues();
+
     }
 
+    /// <summary>
+    /// Gives player or dealer a new card and updates their hand value. 
+    /// </summary>
     public void Deal()
     {
-        if(deck.GetDeckSize() <= (52*deckNumbers/2))
-        {
-            deck.BuildDeck();
-            deck.ShuffleDeck();
-        }
         Card newCard = deck.Deal();
         if(playerTurn)
         {
             player.AddToHand(newCard);
+            
         }
         else
         {
@@ -114,6 +149,9 @@ public class GameManager : MonoBehaviour
         UpdateCardValues();
     }
 
+    /// <summary>
+    /// Updates players hand values and displays special hand results
+    /// </summary>
     public void UpdateCardValues()
     {
         foreach(Text tempText in playerHandValuesText)
@@ -121,14 +159,12 @@ public class GameManager : MonoBehaviour
             Destroy(tempText.gameObject);
         }
 
-        playerHandValuesText.Clear();
-
         playerHandText.text = "Player: ";
-
-
+        dealerHandText.text = "Dealer: ";
+        int value = 0;
         for (int index = 0; index < player.GetHandValues().Count; index++)
         {
-            int value = player.GetHandValues()[index];
+            value = player.GetHandValues()[index];
             if(value > 21)
             {
                 playerHandText.text += System.Environment.NewLine +
@@ -139,7 +175,7 @@ public class GameManager : MonoBehaviour
             {
                 playerHandText.text += System.Environment.NewLine +
                 value.ToString() + " BLACKJACK";
-
+                Stand();
             }
             else
             {
@@ -148,16 +184,29 @@ public class GameManager : MonoBehaviour
             }
 
         }
-        if (player.GetHandFinished()[player.GetHandCount()] == true)
+        value = dealer.GetHandValue();
+        if (value > 21)
         {
-            standButton.interactable = false;
-            splitButton.interactable = false;
-            hitButton.interactable = false;
-            ChangePlayerTurn();
+            dealerHandText.text += System.Environment.NewLine +
+            value.ToString() + " BUST";
+
         }
+        else if (value == 21 && dealer.GetHand().Count == 2)
+        {
+            dealerHandText.text += System.Environment.NewLine +
+            value.ToString() + " BLACKJACK";
+        }
+        else
+        {
+            dealerHandText.text += System.Environment.NewLine +
+            value.ToString();
+        }
+
     }
 
-
+    /// <summary>
+    /// Switch between dealer and player turns.
+    /// </summary>
     public void ChangePlayerTurn()
     {
         if(playerTurn)
@@ -171,16 +220,28 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Plays dealer hand a finish condition is met.
+    /// </summary>
     private void PlayDealer()
     {
-        dealer.FlipCard();
+        if(dealer.CardCount() == 2)
+        {
+            dealer.FlipCard();
+        }
+
         while (!dealer.GetHandFinished() )
         {
             Deal();
         }
         CalculateWinnings();
         betButton.interactable = true;
+        ChangePlayerTurn();
     }
+
+    /// <summary>
+    /// Resets the game to default state.
+    /// </summary>
     private void ResetGame()
     {
         betSlider.interactable = true;
@@ -190,6 +251,9 @@ public class GameManager : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Calculate player winnings for each hand. 
+    /// </summary>
     private void CalculateWinnings()
     {
         for(int index = 0; index < player.GetHandValues().Count; index++ )
@@ -198,6 +262,40 @@ public class GameManager : MonoBehaviour
             {
                 player.SetCredit(player.GetCredit() + player.GetBets()[index]);
             }
+            else if(player.GetHandValues()[index] > dealer.GetHandValue() && player.GetHandValues()[index] <21)
+            {
+                player.SetCredit(player.GetCredit() + (player.GetBets()[index]) * 2);
+            }
+            else if(player.GetHandValues()[index] == 21 && player.GetHand()[index].Count == 2)
+            {
+                float i = (float)(player.GetCredit() + player.GetBets()[index] * 2.5f);
+                player.SetCredit((float)System.Math.Round(player.GetCredit() + player.GetBets()[index] * 2.5f, 2));
+                
+            }
+        }
+        creditText.text = "Credit: " + player.GetCredit().ToString();
+    }
+
+    public void Stand()
+    {
+        player.NextSplitHand();
+        if (player.GetHandFinished()[player.GetHandCount()])
+        {
+            standButton.interactable = false;
+            splitButton.interactable = false;
+            hitButton.interactable = false;
+            ChangePlayerTurn();
+        }
+    }
+    public void Hit()
+    {
+        Deal();
+        if (player.GetHandFinished()[player.GetHandCount()])
+        {
+            standButton.interactable = false;
+            splitButton.interactable = false;
+            hitButton.interactable = false;
+            ChangePlayerTurn();
         }
     }
 }

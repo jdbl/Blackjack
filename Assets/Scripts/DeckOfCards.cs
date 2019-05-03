@@ -8,6 +8,11 @@ using UnityEngine;
 /// TODO
 /// Issue with shuffling when cards are in play
 /// Needs to remember which cards are in play during shuffle
+/// Verify GameManager.deckNumbers is working
+
+/// <summary>
+/// Creates a full deck of cards and deals and reshuffles wherever needed.
+/// </summary>
 public class DeckOfCards : MonoBehaviour
 {
     [SerializeField]
@@ -16,6 +21,9 @@ public class DeckOfCards : MonoBehaviour
     private int numberOfCards = 52 * GameManager.deckNumbers;
     private List<Card> deck = new List<Card>();
 
+    /// <summary>
+    /// Creates the deck of cards depending on the number of decks specified in GameManager.
+    /// </summary>
     public void BuildDeck()
     {
         deck.Clear();
@@ -23,8 +31,11 @@ public class DeckOfCards : MonoBehaviour
         {
             for(int cardFace = 1; cardFace <= 13; cardFace++)
             {
-                
-                if(cardFace < 10)
+                if(cardFace == 1)
+                {
+                    deck.Add(new Card(11, suitIndex % Card.DIAMOND * GameManager.deckNumbers, deckPrefabs[((13 * (suitIndex - 1)) + (cardFace - 1))]));
+                }
+                else if(cardFace < 10)
                 {
                     deck.Add(new Card(cardFace, suitIndex % Card.DIAMOND * GameManager.deckNumbers, deckPrefabs[((13*(suitIndex-1))+(cardFace-1))]));
                 }
@@ -36,6 +47,10 @@ public class DeckOfCards : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Randomly shuffles cards in deck.
+    /// </summary>
     public void ShuffleDeck()
     {
         System.Random random = new System.Random();
@@ -52,6 +67,9 @@ public class DeckOfCards : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Pulls the first card in the deck and returns it.
+    /// </summary>
     public Card Deal()
     {
         Card newCard = deck[0];
@@ -59,11 +77,18 @@ public class DeckOfCards : MonoBehaviour
         return newCard;
 
     }
+
+    /// <summary>
+    /// Returns remaing number of cards in the deck.
+    /// </summary>
     public int GetDeckSize()
     {
         return deck.Count;
     }
-    
+
+    /// <summary>
+    /// Returns the Prefabs of each card in the deck.
+    /// </summary>
     public GameObject[] GetDeckPrefabs()
     {
         return deckPrefabs;

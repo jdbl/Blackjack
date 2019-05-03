@@ -2,119 +2,111 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
+
+/// <summary>
+/// Control for dealer play.
+/// </summary>
 public class DealerController : MonoBehaviour
 {
-    public bool HasCards = false;
 
-    [SerializeField]
-    private Slider BetSlider;
-    [SerializeField]
-    private int Bet = 0;
+    /*
+        This class controls all dealer actions and monitors dealers cards.
+
+        Public Methods:
+            GetHand()
+            GetHandValue()
+            AddToHand()
+            FlipCard()
+            ResetHand()
+            GetHandFinished()
+            CardCount()
+        Private Methods:
+            DisplayCard(Card newCard)
+                newCard: Card to instantiate on table
+            DisplayCard(Card newCard, bool second)
+                newCard: Card to instantiate on table
+                second: bool determining if new card should be face down
+    */
+
     [SerializeField]
     private List<Card> hand = new List<Card>();
 
 
-    private int cardIndex = 0;
-    private int handIndex = 0;
-    private int handCount = 0;
+    private int cardCount = 0;
     private int handValue = 0;
     private bool handFinished = false;
     private List<GameObject> handPrefabs = new List<GameObject>();
     
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
+    /// <summary>
+    /// Returns current dealer hand.
+    /// </summary>
+    /// <returns>List(Card)</returns>
     public List<Card> GetHand()
     {
         return hand;
     }
+
+    /// <summary>
+    /// Returns current value of dealers current hand.
+    /// </summary>
+    /// <returns>int</returns>
     public int GetHandValue()
     {
         return handValue;
     }
 
-    public void PlaceBet()
-    {
-        Bet = (int)BetSlider.value;
-
-    }
-    public int GetBet()
-    {
-        return Bet;
-    }
-
+    /// <summary>
+    /// Add Card to dealer hand.
+    /// </summary>
+    /// <param name="newCard">New card to be added to the hand.</param>
     public void AddToHand(Card newCard)
     {//Add new card dealt to players hand
-
-        if (hand.Count == 0)
-        {//if hand is currently empty
-            if (newCard.GetFaceValue() == 1)
-            {//if new card is an ace set value to 11 and add
-                newCard.ChangeAceFaceValue();
-                hand.Add(newCard);
-                DisplayCard(newCard);
-            }
-            else
+        
+        if (handValue + newCard.GetFaceValue() > 21 && (newCard.GetFaceValue() == 11))
+        {
+            newCard.ChangeAceFaceValue();
+        }
+        else if (handValue + newCard.GetFaceValue() > 21)
+        {
+            for (int index = 0; index < hand.Count; index++)
             {
-                hand.Add(newCard);
-                DisplayCard(newCard);
+                if (hand[index].GetFaceValue() == 11)
+                {
+                    hand[index].ChangeAceFaceValue();
+                    handValue -= 10;
+                    if (handValue + newCard.GetFaceValue() <= 21)
+                    {
+                        index = hand.Count;
+                    }
+                }
             }
+        }
+        handValue += newCard.GetFaceValue();
+        hand.Add(newCard);
+        if(cardCount == 1)
+        {
+            DisplayCard(newCard, true);
         }
         else
         {
-            if (hand[0].GetFaceValue() != 11 && newCard.GetFaceValue() == 1)
-            {//if first card in hand is not an 11 value ace.
-                newCard.ChangeAceFaceValue();
-                hand.Add(newCard);
-                if(hand.Count == 1)
-                {
-                    DisplayCard(newCard, true);
-                }
-                else
-                {
-                    DisplayCard(newCard);
-                }
-                
-            }
-            else
-            {
-                hand.Add(newCard);
-                if (hand.Count == 2)
-                {
-                    DisplayCard(newCard, true);
-                }
-                else
-                {
-                    DisplayCard(newCard);
-                }
-            }
-
+            DisplayCard(newCard);
         }
-
-
-        if ((handValue + newCard.GetFaceValue() > 21) && (newCard.GetFaceValue() == 11))
-        {//Add new value to hand
-         //If new value is an ace that puts it into bust it sets it to 1 and adds
-            hand[0].ChangeAceFaceValue();
-            handValue += 1;
-        }
-        else
-        {
-            handValue += newCard.GetFaceValue();
-        }
-
+        
+        cardCount++;
         if (handValue >= 16)
         {
             handFinished = true;
         }
 
-        cardIndex++;
+        
 
     }
 
+    /// <summary>
+    /// Instantiate card and render gameobject.
+    /// </summary>
+    /// <param name="newCard">New card to be rendered.</param>
     private void DisplayCard(Card newCard)
     {
         handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform));
@@ -122,6 +114,11 @@ public class DealerController : MonoBehaviour
         handPrefabs[handPrefabs.Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
     }
 
+    /// <summary>
+    /// Instantiate card and render gameobject face down.
+    /// </summary>
+    /// <param name="newCard">New card to be rendered.</param>
+    /// <param name="second">Render card face down</param>
     private void DisplayCard(Card newCard, bool second)
     {
         handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform));
@@ -129,18 +126,21 @@ public class DealerController : MonoBehaviour
         handPrefabs[1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
     }
 
+    /// <summary>
+    /// Flip second dealer card facing up.
+    /// </summary>
     public void FlipCard()
     {
         handPrefabs[1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.0f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
     }
 
+    /// <summary>
+    /// Reset hand to empty default.
+    /// </summary>
     public void ResetHand()
     {
         hand.Clear();
-        handFinished = true;
-        cardIndex = 0;
-        handIndex = 0;
-        handCount = 0;
+        handFinished = false;
         handValue = 0;
         try
         {
@@ -152,8 +152,17 @@ public class DealerController : MonoBehaviour
         }
         catch { }
     }
+
+    /// <summary>
+    /// Return dealers current hand status.
+    /// </summary>
+    /// <returns>bool</returns>
     public bool GetHandFinished()
     {
         return handFinished;
+    }
+    public int CardCount()
+    {
+        return cardCount;
     }
 }
