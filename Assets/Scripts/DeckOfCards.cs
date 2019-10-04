@@ -77,13 +77,7 @@ public class DeckOfCards : MonoBehaviour
 			deck[index] = value;
             
 		}
-		/*
-		deck[0] = deck[10];
-		deck[1] = deck[1];
-		deck[2] = deck[9];
-		deck[4] = deck[11];
-		deck[5] = deck[12];
-		*/
+		
 	}
 
 	/// <summary>
