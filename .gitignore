@@ -1,0 +1,8 @@
+.vs/
+.gradle/
+*.apk
+*.unitypackage
+*.sln
+*.suo
+*.opendb
+*.VC.db
