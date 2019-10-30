@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
+
 
 
 /// <summary>
@@ -17,7 +19,7 @@ public class GameManager : MonoBehaviour
         It also controls player turns and available actions on the UI
 
         Public Methods:
-			UpdateBetText()
+			UpdateBet()
 			DealGame()
 			Deal()
 			UpdateCardValues()
@@ -87,13 +89,19 @@ public class GameManager : MonoBehaviour
 	private Image gameOverImage = null;
 	[SerializeField]
 	private Button doubleButton = null;
+	[SerializeField]
+	private GameObject BetArea = null;
 
+	private AllChips allChips = new AllChips();
 	private List<Text> handResultsText;
 	public static int deckNumbers = 1;
 	private bool playerTurn = true;
 	private bool insuranceBlackjack = false;
 	private const int STARTING_CREDIT = 100;
 	private int lastBet = 0;
+	private bool canBet = false;
+	private int currentBet = 0;
+	
 
 	// Start is called before the first frame update
 	void Start()
@@ -104,24 +112,84 @@ public class GameManager : MonoBehaviour
 		player.ResetHand();
 		handResultsText = new List<Text>();
 		creditText.text = "Credit: " + player.GetCredit().ToString();
+		canBet = true;
 		standButton.interactable = false;
 		splitButton.interactable = false;
 		hitButton.interactable = false;
 		doubleButton.interactable = false;
 		gameOverImage.gameObject.SetActive(false);
+
 	}
 
-  
+    private void Update()
+    {
+		if(canBet)
+		{
+			ChangeBet();
+		}
+		
+    }
 
 	/// <summary>
-	/// Update user bet on display
+	/// Add chip to betting pool 
 	/// </summary>
-	public void UpdateBetText()
+	private void ChangeBet()
 	{
-		betText.text = "Bet: " + System.Math.Round(betSlider.value, 2).ToString();
+		foreach (Touch touch in Input.touches)
+		{
+			if (touch.phase == TouchPhase.Ended)
+			{
+				Ray ray = Camera.main.ScreenPointToRay(touch.position);
+				if (Physics.Raycast(ray, out RaycastHit hit, 100.0f))
+				{ 
+					GameObject hitObject = hit.collider.gameObject;
+					Chip hitChip = allChips.FindChipByName(hitObject.name);
+
+					if (hitChip != null)
+					{
+						if(hitObject.transform.parent.name == "ChipBlock")
+						{
+							UpdateBet(hitChip.ChipValue, true, hitChip);
+						}
+						else if(hitObject.transform.parent.name == "BetArea")
+						{
+							UpdateBet(hitChip.ChipValue, false, hitChip);
+						}
+					}
+				}
+			}
+		}
 	}
 
+    /// <summary>
+    /// Update user bet on display
+    /// </summary>
+    public void UpdateBet(int betValue, bool increase, Chip chip)
+	{
+		//betText.text = "Bet: " + System.Math.Round(betSlider.value, 2).ToString();
+
+		if (increase)
+		{
+			AddChipToBet(chip);
+			currentBet += betValue;
+		}
+		else
+		{
+			currentBet -= betValue;
+		}
+		betText.text = betValue.ToString();
+		
+	}
+	
 	/// <summary>
+	/// Creates a new chip 
+	/// </summary>
+	private void AddChipToBet(Chip chip)
+	{
+		Instantiate(chip.Prefab, new Vector3(0.0f, -1.0f, 0.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f), BetArea.transform);
+	}
+
+	/// <summary>	
 	/// First deal of the game.
 	/// </summary>
 	public void DealGame()
@@ -607,3 +675,6 @@ public class GameManager : MonoBehaviour
 		betSlider.interactable = true;
 	}
 }
+
+[System.Serializable]
+public class DictionaryOfIntAndGameObject : SerializableDictionary<int, GameObject> { }
