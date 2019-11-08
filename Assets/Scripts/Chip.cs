@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Chip : MonoBehaviour
+public class Chip
 {
 	[SerializeField]
 	private GameObject prefab;
 
 	private int chipValue;
 	private string chipName;
-
+	
 	public Chip(GameObject _prefab, int _chipValue)
 	{
+		chipName = _prefab.name;
 		prefab = _prefab;
 		chipValue = _chipValue;
 	}

@@ -61,8 +61,8 @@ public class GameManager : MonoBehaviour
 	private PlayerController player = null;
 	[SerializeField]
 	private DealerController dealer = null;
-	[SerializeField]
-	private Canvas mainCanvas;
+	//[SerializeField]
+	//private Canvas mainCanvas;
 	[SerializeField]
 	private DeckOfCards deck = null;
 	[SerializeField]
@@ -91,8 +91,10 @@ public class GameManager : MonoBehaviour
 	private Button doubleButton = null;
 	[SerializeField]
 	private GameObject BetArea = null;
+	[SerializeField]
+	private AllChips allChips = null;
 
-	private AllChips allChips = new AllChips();
+
 	private List<Text> handResultsText;
 	public static int deckNumbers = 1;
 	private bool playerTurn = true;
@@ -108,10 +110,11 @@ public class GameManager : MonoBehaviour
 	{
 		deck.BuildDeck();
 		deck.ShuffleDeck();
-		player.SetCredit(STARTING_CREDIT);
+		allChips.MakeChips();
+		player.Credit = STARTING_CREDIT;
 		player.ResetHand();
 		handResultsText = new List<Text>();
-		creditText.text = "Credit: " + player.GetCredit().ToString();
+		creditText.text = "Credit: " + player.Credit.ToString();
 		canBet = true;
 		standButton.interactable = false;
 		splitButton.interactable = false;
@@ -159,34 +162,75 @@ public class GameManager : MonoBehaviour
 				}
 			}
 		}
+		if(Input.anyKey)
+		{
+			if(Input.GetMouseButtonDown(0))
+			{
+				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+				if (Physics.Raycast(ray, out RaycastHit hit, 100.0f))
+				{
+					GameObject hitObject = hit.collider.gameObject;
+					Chip hitChip = allChips.FindChipByName(hitObject.name);
+					betText.text = "111";
+					if (hitChip != null)
+					{
+						if (hitObject.transform.parent.name == "ChipBlock")
+						{
+							UpdateBet(hitChip.ChipValue, true, hitChip);
+						}
+						else if (hitObject.transform.parent.name == "BetArea")
+						{
+							UpdateBet(hitChip.ChipValue, false, hitChip);
+						}
+					}
+				}
+			}
+		}
 	}
 
     /// <summary>
     /// Update user bet on display
     /// </summary>
-    public void UpdateBet(int betValue, bool increase, Chip chip)
+    public void UpdateBet(int betValue, bool increase, object chip)
 	{
 		//betText.text = "Bet: " + System.Math.Round(betSlider.value, 2).ToString();
 
 		if (increase)
 		{
-			AddChipToBet(chip);
+			AddChipToBet((Chip)chip);
 			currentBet += betValue;
 		}
 		else
 		{
+			RemoveChipFromBet((GameObject)chip);
 			currentBet -= betValue;
 		}
 		betText.text = betValue.ToString();
 		
 	}
-	
+
 	/// <summary>
 	/// Creates a new chip 
 	/// </summary>
+	/// <param name="chip"></param>
 	private void AddChipToBet(Chip chip)
+	{/// TODO add random chip locations in bet area. get parent render bounds and xy random range 
+		//Instantiate(chip.Prefab, new Vector3(0.0f, -1.0f, 0.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f), BetArea.transform);
+		GameObject newChip = Instantiate(chip.Prefab);
+		newChip.transform.SetParent(BetArea.transform);
+		
+		newChip.transform.localPosition = new Vector3(0.0f, -1.0f, 0.0f);
+		newChip.transform.localRotation = new Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
+		newChip.transform.localScale = new Vector3(.33f, 10.0f, .33f);
+	}
+
+	/// <summary>
+	/// Removers tapped chip from bet area
+	/// </summary>
+	/// <param name="chip"></param>
+	private void RemoveChipFromBet(GameObject chip)
 	{
-		Instantiate(chip.Prefab, new Vector3(0.0f, -1.0f, 0.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f), BetArea.transform);
+		Destroy(chip);
 	}
 
 	/// <summary>	
@@ -202,7 +246,7 @@ public class GameManager : MonoBehaviour
 		player.PlaceBet();
 		standButton.interactable = true;
 		hitButton.interactable = true;
-		if(player.GetBets()[0] <= player.GetCredit())
+		if(player.GetBets()[0] <= player.Credit)
 		{
 			doubleButton.interactable = true;
 		}
@@ -235,7 +279,7 @@ public class GameManager : MonoBehaviour
 		}
 		if(dealer.GetHand()[0].GetFaceValue() == 11)
 		{
-			if(player.GetCredit() >= (lastBet/2))
+			if(player.Credit >= (lastBet/2))
 			{
 				insuranceText.transform.gameObject.SetActive(true);
 				insuranceYesButton.gameObject.SetActive(true);
@@ -251,7 +295,7 @@ public class GameManager : MonoBehaviour
 			}
 			
 		}        
-		else if(player.Splitable() && !insuranceBlackjack && player.GetBets()[0] <= player.GetCredit())
+		else if(player.Splitable() && !insuranceBlackjack && player.GetBets()[0] <= player.Credit)
 		{
 			splitButton.interactable = true;
 		}
@@ -279,7 +323,7 @@ public class GameManager : MonoBehaviour
 			dealer.AddToHand(newCard);
 		}
 
-		if (player.Splitable() && player.GetBets()[0] <= player.GetCredit())
+		if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 		{
 			splitButton.interactable = true;
 		}
@@ -435,7 +479,7 @@ public class GameManager : MonoBehaviour
 		}
 		UpdateCardValues();
 		CalculateWinnings();
-		betSlider.maxValue = player.GetCredit();
+		betSlider.maxValue = player.Credit;
 		betButton.interactable = true;
 		betSlider.interactable = true;
 		splitButton.interactable = false;
@@ -467,29 +511,29 @@ public class GameManager : MonoBehaviour
 		{
 		if (player.GetHandValues()[index] == dealer.GetHandValue() )
 		{//PUSH
-			player.SetCredit(player.GetCredit() + player.GetBets()[index]);
+			player.Credit = player.Credit + player.GetBets()[index];
 		}
 		else if (player.GetHandValues()[index] == 21 && player.GetHand()[index].Count == 2)
 		{//BLACKJACK
-			player.SetCredit((int)(player.GetCredit() + player.GetBets()[index] * 2.5f));
+			player.Credit = (int)(player.Credit + player.GetBets()[index] * 2.5f);
 
 		}
 		else if(player.GetHandValues()[index] > dealer.GetHandValue() && player.GetHandValues()[index] <=21)
 		{//WIN
-			player.SetCredit(player.GetCredit() + (player.GetBets()[index]) * 2);
+			player.Credit = player.Credit + (player.GetBets()[index]) * 2;
 
 		}
 		else if(player.GetHandValues()[index] <= 21 && dealer.GetHandValue() > 21)
 		{//WIN
-			player.SetCredit(player.GetCredit() + (player.GetBets()[index]) * 2);
+			player.Credit = player.Credit + (player.GetBets()[index]) * 2;
 
 		}
 
             
 		}
-		creditText.text = "Credit: " + player.GetCredit().ToString() + System.Environment.NewLine + "Last Bet: " + lastBet.ToString();
+		creditText.text = "Credit: " + player.Credit.ToString() + System.Environment.NewLine + "Last Bet: " + lastBet.ToString();
 
-		if (player.GetCredit() < 5)
+		if (player.Credit < 5)
 		{
 			gameOverImage.gameObject.SetActive(true);
 			betButton.interactable = false;
@@ -517,7 +561,7 @@ public class GameManager : MonoBehaviour
 		}
 		else
 		{
-			if (player.Splitable() && player.GetBets()[0] <= player.GetCredit())
+			if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 			{
 				splitButton.interactable = true;
 			}
@@ -559,7 +603,7 @@ public class GameManager : MonoBehaviour
 	public void Split()
 	{
 		player.Split(deck.Deal());
-		if (player.Splitable() && player.GetBets()[0] <= player.GetCredit())
+		if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 		{
 			splitButton.interactable = true;
 		}
@@ -591,7 +635,7 @@ public class GameManager : MonoBehaviour
 			doubleButton.interactable = true;
 			standButton.interactable = true;
 			hitButton.interactable = true;
-			if (player.Splitable() && player.GetBets()[0] <= player.GetCredit())
+			if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 			{
 				splitButton.interactable = true;
 			}
@@ -614,7 +658,7 @@ public class GameManager : MonoBehaviour
 
 		if (dealer.GetHandValue() == 21)
 		{
-			player.SetCredit(player.GetCredit() + player.GetBets()[0]);
+			player.Credit = player.Credit + player.GetBets()[0];
 			insuranceBlackjack = true;
 			Stand();
 		}
@@ -623,8 +667,8 @@ public class GameManager : MonoBehaviour
 			doubleButton.interactable = true;
 			standButton.interactable = true;
 			hitButton.interactable = true;
-			player.SetCredit(player.GetCredit() - (int)(player.GetBets()[0] / 2));
-			if (player.Splitable() && player.GetBets()[0] <= player.GetCredit())
+			player.Credit = player.Credit - (int)(player.GetBets()[0] / 2);
+			if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 			{
 				splitButton.interactable = true;
 			}
@@ -634,7 +678,7 @@ public class GameManager : MonoBehaviour
 			}
 		}
 
-		creditText.text = "Credit: " + player.GetCredit().ToString() + System.Environment.NewLine + "Last Bet: " + lastBet.ToString();
+		creditText.text = "Credit: " + player.Credit.ToString() + System.Environment.NewLine + "Last Bet: " + lastBet.ToString();
 	}
 
 	/// <summary>
@@ -642,8 +686,8 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void Replay()
 	{
-		player.SetCredit(STARTING_CREDIT);
-		creditText.text = "Credit: " + player.GetCredit().ToString();
+		player.Credit = STARTING_CREDIT;
+		creditText.text = "Credit: " + player.Credit.ToString();
 		betSlider.maxValue = STARTING_CREDIT;
 		ResetGame();
 		gameOverImage.gameObject.SetActive(false);

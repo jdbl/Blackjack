@@ -11,12 +11,13 @@ public class AllChips : MonoBehaviour
 
 	private Chip[] chips = null;
 
-	public AllChips()
+	public void MakeChips()
 	{
 		chips = new Chip[chipPrefabs.Length];
-		for(int i = 0; i < chipPrefabs.Length; i++)
+		for (int i = 0; i < chipPrefabs.Length; i++)
 		{
 			chips[i] = new Chip(chipPrefabs[i], chipValues[i]); 
+			
 		}
 	}
 
@@ -24,7 +25,7 @@ public class AllChips : MonoBehaviour
 	{
 		foreach(Chip testChip in chips)
 		{
-			if(testChip.name == name)
+			if(testChip.ChipName == name)
 			{
 				return testChip;
 			}

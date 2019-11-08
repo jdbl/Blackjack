@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,7 +40,7 @@ public class PlayerController : MonoBehaviour
 
 
 	[SerializeField]
-    private Slider BetSlider = null;
+    private Text betText = null;
     [SerializeField]
     private List<int> bets = new List<int>();
     [SerializeField]
@@ -54,13 +55,19 @@ public class PlayerController : MonoBehaviour
     private int handCount = 0;
     private List<int> handValues = new List<int>();
     private bool[] handFinished = { false, false, false, false };
-    private int credit = 0;
+    private int credit;
     private List<List<GameObject>> handPrefabs = new List<List<GameObject>>();
 
 	// Start is called before the first frame update
 	void Start()
 	{
 		hand.Add(new List<Card>());
+	}
+
+	public int Credit
+	{
+		get { return credit; }
+		set { credit = value; }
 	}
 
 	/// <summary>
@@ -87,10 +94,10 @@ public class PlayerController : MonoBehaviour
 	/// 
 	public void PlaceBet()
 	{
-		bets.Add((int)BetSlider.value);
-		credit -= (int)BetSlider.value;
-		creditText.text = "Credit: " + credit.ToString() + System.Environment.NewLine + "Last Bet: " + BetSlider.value.ToString();
-		BetSlider.maxValue = credit;
+		int bet = Convert.ToInt32(betText.text);
+		bets.Add(bet);
+		credit -= bet;
+		creditText.text = "Credit: " + credit.ToString() + System.Environment.NewLine + "Last Bet: " + betText.text;
 	}
 
 	/// <summary>
@@ -102,7 +109,6 @@ public class PlayerController : MonoBehaviour
 		credit -= bets[index];
 		bets[index] *= 2;
 		creditText.text = "Credit: " + credit.ToString() + System.Environment.NewLine + "Last Bet: " + bets[index];
-		BetSlider.maxValue = credit;
 	}
 	/// <summary>
 	/// Returns players bets for each hand.
@@ -283,23 +289,6 @@ public class PlayerController : MonoBehaviour
 		return handFinished;
 	}
 
-	/// <summary>
-	/// Get players machine credit
-	/// </summary>
-	/// <returns>int</returns>
-	public int GetCredit()
-	{
-		return credit;
-	}
-
-	/// <summary>
-	/// Assigns player credit to reflect changes.
-	/// </summary>
-	/// <param name="_credit"></param>
-	public void SetCredit(int _credit)
-	{
-		this.credit = _credit;
-	}
 
 	/// <summary>
 	/// Determines if current hand can be split.
