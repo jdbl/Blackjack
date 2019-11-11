@@ -564,3 +564,5 @@ C:\Users\jebrown\Documents\repos\Blackjack\obj\Debug\Assembly-CSharp.csproj.Core
 C:\Users\jebrown\Documents\repos\Blackjack\obj\Debug\Assembly-CSharp.csproj.CopyComplete
 C:\Users\jebrown\Documents\repos\Blackjack\obj\Debug\Assembly-CSharp.dll
 C:\Users\jebrown\Documents\repos\Blackjack\obj\Debug\Assembly-CSharp.pdb
+D:\Users\Jerry\GitHub\Unity\Blackjack\Temp\bin\Debug\UnityEngine.SpatialTrackingModule.dll
+D:\Users\Jerry\GitHub\Unity\Blackjack\Temp\bin\Debug\UnityEngine.SpatialTrackingModule.xml

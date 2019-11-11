@@ -103,7 +103,7 @@ public class GameManager : MonoBehaviour
 	private int lastBet = 0;
 	private bool canBet = false;
 	private int currentBet = 0;
-	
+    private readonly System.Random random = new System.Random();
 
 	// Start is called before the first frame update
 	void Start()
@@ -180,7 +180,7 @@ public class GameManager : MonoBehaviour
 						}
 						else if (hitObject.transform.parent.name == "BetArea")
 						{
-							UpdateBet(hitChip.ChipValue, false, hitChip);
+							UpdateBet(hitChip.ChipValue, false, hitObject);
 						}
 					}
 				}
@@ -218,9 +218,13 @@ public class GameManager : MonoBehaviour
 		//Instantiate(chip.Prefab, new Vector3(0.0f, -1.0f, 0.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f), BetArea.transform);
 		GameObject newChip = Instantiate(chip.Prefab);
 		newChip.transform.SetParent(BetArea.transform);
-		
-		newChip.transform.localPosition = new Vector3(0.0f, -1.0f, 0.0f);
-		newChip.transform.localRotation = new Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
+        int angle = random.Next(1440);
+        Renderer betAreaRenderer = BetArea.GetComponent<Renderer>();
+        float randomX = Random.Range(0.0f, betAreaRenderer.bounds.extents.x) * Mathf.Cos(angle);
+        float randomZ = Random.Range(0.0f, betAreaRenderer.bounds.extents.z) * Mathf.Sin(angle);
+        
+        newChip.transform.localPosition = new Vector3(randomX, BetArea.transform.childCount * 12, randomZ);
+        newChip.transform.localRotation = new Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
 		newChip.transform.localScale = new Vector3(.33f, 10.0f, .33f);
 	}
 
@@ -230,7 +234,15 @@ public class GameManager : MonoBehaviour
 	/// <param name="chip"></param>
 	private void RemoveChipFromBet(GameObject chip)
 	{
-		Destroy(chip);
+        for(int index = chip.transform.GetSiblingIndex()+1; index < BetArea.transform.childCount; index++)
+        {
+            BetArea.transform.GetChild(index).transform.localPosition = 
+                new Vector3(BetArea.transform.GetChild(index).transform.localPosition.x,
+                index * 12,
+                BetArea.transform.GetChild(index).transform.localPosition.z);
+        }
+
+        Destroy(chip);
 	}
 
 	/// <summary>	

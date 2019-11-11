@@ -25,7 +25,7 @@ public class AllChips : MonoBehaviour
 	{
 		foreach(Chip testChip in chips)
 		{
-			if(testChip.ChipName == name)
+			if(testChip.ChipName == name || testChip.ChipName + "(Clone)" == name)
 			{
 				return testChip;
 			}
