@@ -39,14 +39,14 @@ public class PlayerController : MonoBehaviour
    */
 
 
-	[SerializeField]
-    private Text betText = null;
+	//[SerializeField]
+    //private Text betText = null;
     [SerializeField]
     private List<int> bets = new List<int>();
     [SerializeField]
     private List<List<Card>> hand = new List<List<Card>>();
-    [SerializeField]
-    private Text creditText = null;
+    //[SerializeField]
+    //private Text creditText = null;
 	[SerializeField]
 	private GameObject arrow = null;
 
@@ -92,12 +92,12 @@ public class PlayerController : MonoBehaviour
 	/// Sets players bet from slider value.
 	/// </summary>
 	/// 
-	public void PlaceBet()
+	public void PlaceBet(int newBet)
 	{
-		int bet = Convert.ToInt32(betText.text);
-		bets.Add(bet);
-		credit -= bet;
-		creditText.text = "Credit: " + credit.ToString() + System.Environment.NewLine + "Last Bet: " + betText.text;
+		//int bet = Convert.ToInt32(betText.text);
+		bets.Add(newBet);
+		credit -= newBet;
+		//creditText.text = "Credit: " + credit.ToString() + System.Environment.NewLine + "Last Bet: " + betText.text;
 	}
 
 	/// <summary>
@@ -108,8 +108,9 @@ public class PlayerController : MonoBehaviour
 	{
 		credit -= bets[index];
 		bets[index] *= 2;
-		creditText.text = "Credit: " + credit.ToString() + System.Environment.NewLine + "Last Bet: " + bets[index];
+		//creditText.text = "Credit: " + credit.ToString() + System.Environment.NewLine + "Last Bet: " + bets[index];
 	}
+
 	/// <summary>
 	/// Returns players bets for each hand.
 	/// </summary>
@@ -172,6 +173,7 @@ public class PlayerController : MonoBehaviour
 	private void DisplayCard(Card newCard)
 	{
 		handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform));
+
 		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.SetPositionAndRotation(new Vector3((float)((hand[handIndex].Count - 1) * 0.5f),
 			-2.25f + ((handIndex) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
@@ -211,7 +213,7 @@ public class PlayerController : MonoBehaviour
 			-2.25f + ((handCount + 1) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[handCount + 1][0].transform.Translate(new Vector3(0.0f, 0.0f, 0.1f));
 
-		PlaceBet();
+		PlaceBet(bets[0]);
 		handCount++;
 	}
 

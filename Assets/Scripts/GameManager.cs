@@ -53,8 +53,8 @@ public class GameManager : MonoBehaviour
 
     */
 
-	[SerializeField]
-	private Slider betSlider = null;
+	//[SerializeField]
+	//private Slider betSlider = null;
 	[SerializeField]
 	private Text betText = null;
 	[SerializeField]
@@ -99,7 +99,7 @@ public class GameManager : MonoBehaviour
 	public static int deckNumbers = 1;
 	private bool playerTurn = true;
 	private bool insuranceBlackjack = false;
-	private const int STARTING_CREDIT = 100;
+	private const int STARTING_CREDIT = 10000;
 	private int lastBet = 0;
 	private bool canBet = false;
 	private int currentBet = 0;
@@ -114,12 +114,12 @@ public class GameManager : MonoBehaviour
 		player.Credit = STARTING_CREDIT;
 		player.ResetHand();
 		handResultsText = new List<Text>();
-		creditText.text = "Credit: " + player.Credit.ToString();
+		creditText.text = ConvertToDollars(player.Credit);
 		canBet = true;
-		standButton.interactable = false;
-		splitButton.interactable = false;
-		hitButton.interactable = false;
-		doubleButton.interactable = false;
+		standButton.gameObject.SetActive(false);
+		splitButton.gameObject.SetActive(false);
+		hitButton.gameObject.SetActive(false);
+		doubleButton.gameObject.SetActive(false);
 		gameOverImage.gameObject.SetActive(false);
 
 	}
@@ -138,6 +138,7 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	private void ChangeBet()
 	{
+		
 		foreach (Touch touch in Input.touches)
 		{
 			if (touch.phase == TouchPhase.Ended)
@@ -197,15 +198,20 @@ public class GameManager : MonoBehaviour
 
 		if (increase)
 		{
-			AddChipToBet((Chip)chip);
-			currentBet += betValue;
+			if(currentBet + betValue <= player.Credit)
+			{
+				AddChipToBet((Chip)chip);
+				currentBet += betValue;
+			}
+			
 		}
 		else
 		{
 			RemoveChipFromBet((GameObject)chip);
 			currentBet -= betValue;
 		}
-		betText.text = betValue.ToString();
+		betText.text = ConvertToDollars(currentBet);
+		creditText.text = ConvertToDollars(player.Credit - currentBet);
 		
 	}
 
@@ -229,7 +235,7 @@ public class GameManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Removers tapped chip from bet area
+	/// Removes tapped chip from bet area
 	/// </summary>
 	/// <param name="chip"></param>
 	private void RemoveChipFromBet(GameObject chip)
@@ -245,6 +251,18 @@ public class GameManager : MonoBehaviour
         Destroy(chip);
 	}
 
+	public string ConvertToDollars(int money)
+	{
+		string tempMoney = money.ToString();
+		int index = tempMoney.Length - 3;
+		while(index > 0)
+		{
+			tempMoney = tempMoney.Insert(index, ",");
+			index -= 3;
+		}
+		tempMoney = "$" + tempMoney;
+		return tempMoney;
+	}
 	/// <summary>	
 	/// First deal of the game.
 	/// </summary>
@@ -252,15 +270,16 @@ public class GameManager : MonoBehaviour
 	{
 
 		ResetGame();
-		betSlider.interactable = false;
-		betButton.interactable = false;
-		lastBet = (int)betSlider.value;
-		player.PlaceBet();
-		standButton.interactable = true;
-		hitButton.interactable = true;
+		//betSlider.interactable = false;
+		betButton.gameObject.SetActive(false);
+		//lastBet = (int)betSlider.value;
+		lastBet = currentBet;
+		player.PlaceBet(currentBet);
+		standButton.gameObject.SetActive(true);
+		hitButton.gameObject.SetActive(true);
 		if(player.GetBets()[0] <= player.Credit)
 		{
-			doubleButton.interactable = true;
+			doubleButton.gameObject.SetActive(true);
 		}
 		
 
@@ -296,10 +315,10 @@ public class GameManager : MonoBehaviour
 				insuranceText.transform.gameObject.SetActive(true);
 				insuranceYesButton.gameObject.SetActive(true);
 				insuranceNoButton.gameObject.SetActive(true);
-				doubleButton.interactable = false;
-				splitButton.interactable = false;
-				standButton.interactable = false;
-				hitButton.interactable = false;
+				doubleButton.gameObject.SetActive(false);
+				splitButton.gameObject.SetActive(false);
+				standButton.gameObject.SetActive(false);
+				hitButton.gameObject.SetActive(false);
 			}
 			else
 			{
@@ -309,11 +328,11 @@ public class GameManager : MonoBehaviour
 		}        
 		else if(player.Splitable() && !insuranceBlackjack && player.GetBets()[0] <= player.Credit)
 		{
-			splitButton.interactable = true;
+			splitButton.gameObject.SetActive(true);
 		}
 		else
 		{
-			splitButton.interactable = false;
+			splitButton.gameObject.SetActive(false);
 		}
 		UpdateCardValues();
 
@@ -337,11 +356,11 @@ public class GameManager : MonoBehaviour
 
 		if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 		{
-			splitButton.interactable = true;
+			splitButton.gameObject.SetActive(true);
 		}
 		else
 		{
-			splitButton.interactable = false;
+			splitButton.gameObject.SetActive(false);
 		}
 		UpdateCardValues();
 	}
@@ -491,12 +510,12 @@ public class GameManager : MonoBehaviour
 		}
 		UpdateCardValues();
 		CalculateWinnings();
-		betSlider.maxValue = player.Credit;
-		betButton.interactable = true;
-		betSlider.interactable = true;
-		splitButton.interactable = false;
-		doubleButton.interactable = false;
-		standButton.interactable = false;
+		//betSlider.maxValue = player.Credit;
+		betButton.gameObject.SetActive(true);
+		//betSlider.interactable = true;
+		splitButton.gameObject.SetActive(false);
+		doubleButton.gameObject.SetActive(false);
+		standButton.gameObject.SetActive(false);
 	}
 
 	/// <summary>
@@ -504,8 +523,8 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	private void ResetGame()
 	{
-		betSlider.interactable = true;
-		betButton.interactable = true;
+		//betSlider.interactable = true;
+		betButton.gameObject.SetActive(true);
 		player.ResetHand();
 		dealer.ResetHand();
         
@@ -548,8 +567,8 @@ public class GameManager : MonoBehaviour
 		if (player.Credit < 5)
 		{
 			gameOverImage.gameObject.SetActive(true);
-			betButton.interactable = false;
-			betSlider.interactable = false;
+			betButton.gameObject.SetActive(false);
+			//betSlider.interactable = false;
 		}
 	}
 
@@ -559,12 +578,12 @@ public class GameManager : MonoBehaviour
 	public void Stand()
 	{
 		NextHand();
-		doubleButton.interactable = false;
+		doubleButton.gameObject.SetActive(false);
 		if (player.GetHandFinished()[player.GetHandCount()])
 		{
-			standButton.interactable = false;
-			splitButton.interactable = false;
-			hitButton.interactable = false;
+			standButton.gameObject.SetActive(false);
+			splitButton.gameObject.SetActive(false);
+			hitButton.gameObject.SetActive(false);
 			ChangePlayerTurn();
 			if (playerTurn && !dealer.GetHandFinished())
 			{
@@ -575,11 +594,11 @@ public class GameManager : MonoBehaviour
 		{
 			if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 			{
-				splitButton.interactable = true;
+				splitButton.gameObject.SetActive(true);
 			}
 			else
 			{
-				splitButton.interactable = false;
+				splitButton.gameObject.SetActive(false);
 			}
 		}
 		
@@ -590,13 +609,13 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void Hit()
 	{
-		doubleButton.interactable = false;
+		doubleButton.gameObject.SetActive(false);
 		Deal();
 		if (player.GetHandFinished()[player.GetHandCount()])
 		{
-			standButton.interactable = false;
-			splitButton.interactable = false;
-			hitButton.interactable = false;
+			standButton.gameObject.SetActive(false);
+			splitButton.gameObject.SetActive(false);
+			hitButton.gameObject.SetActive(false);
 
 			if (playerTurn)
 			{
@@ -617,13 +636,13 @@ public class GameManager : MonoBehaviour
 		player.Split(deck.Deal());
 		if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 		{
-			splitButton.interactable = true;
+			splitButton.gameObject.SetActive(true);
 		}
 		else
 		{
-			splitButton.interactable = false;
+			splitButton.gameObject.SetActive(false);
 		}
-		doubleButton.interactable = false;
+		doubleButton.gameObject.SetActive(false);
 		UpdateCardValues();
 	}
 
@@ -644,16 +663,16 @@ public class GameManager : MonoBehaviour
 		}
 		else
 		{
-			doubleButton.interactable = true;
-			standButton.interactable = true;
-			hitButton.interactable = true;
+			doubleButton.gameObject.SetActive(true);
+			standButton.gameObject.SetActive(true);
+			hitButton.gameObject.SetActive(true);
 			if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 			{
-				splitButton.interactable = true;
+				splitButton.gameObject.SetActive(true);
 			}
 			else
 			{
-				splitButton.interactable = false;
+				splitButton.gameObject.SetActive(false);
 			}
 		}
 	}
@@ -676,17 +695,17 @@ public class GameManager : MonoBehaviour
 		}
 		else
 		{
-			doubleButton.interactable = true;
-			standButton.interactable = true;
-			hitButton.interactable = true;
+			doubleButton.gameObject.SetActive(true);
+			standButton.gameObject.SetActive(true);
+			hitButton.gameObject.SetActive(true);
 			player.Credit = player.Credit - (int)(player.GetBets()[0] / 2);
 			if (player.Splitable() && player.GetBets()[0] <= player.Credit)
 			{
-				splitButton.interactable = true;
+				splitButton.gameObject.SetActive(true);
 			}
 			else
 			{
-				splitButton.interactable = false;
+				splitButton.gameObject.SetActive(false);
 			}
 		}
 
@@ -700,7 +719,7 @@ public class GameManager : MonoBehaviour
 	{
 		player.Credit = STARTING_CREDIT;
 		creditText.text = "Credit: " + player.Credit.ToString();
-		betSlider.maxValue = STARTING_CREDIT;
+		//betSlider.maxValue = STARTING_CREDIT;
 		ResetGame();
 		gameOverImage.gameObject.SetActive(false);
 	}
@@ -727,10 +746,9 @@ public class GameManager : MonoBehaviour
 		player.DoubleBet(0);
 		Deal();
 		Stand();
-		betButton.interactable = true;
-		betSlider.interactable = true;
+		betButton.gameObject.SetActive(true);
+		//betSlider.interactable = true;
 	}
-}
 
-[System.Serializable]
-public class DictionaryOfIntAndGameObject : SerializableDictionary<int, GameObject> { }
+	
+}
