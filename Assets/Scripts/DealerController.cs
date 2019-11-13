@@ -94,6 +94,10 @@ public class DealerController : MonoBehaviour
 		else
 		{
 			DisplayCard(newCard);
+			if(hand.Count > 2)
+			{
+				this.transform.Translate(new Vector3(-0.2f, 0.0f, 0.0f));
+			}
 		}
         
 		cardCount++;
@@ -101,9 +105,6 @@ public class DealerController : MonoBehaviour
 		{
 			handFinished = true;
 		}
-
-        
-
 	}
 
 	/// <summary>
@@ -113,7 +114,8 @@ public class DealerController : MonoBehaviour
 	private void DisplayCard(Card newCard)
 	{
 		handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform));
-		handPrefabs[handPrefabs.Count-1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+		handPrefabs[handPrefabs.Count - 1].transform.localPosition = new Vector3((hand.Count - 1) * 0.4f, (hand.Count -1) * 0.001f, 0.0f);
+		//handPrefabs[handPrefabs.Count-1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[handPrefabs.Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
 	}
 
@@ -125,7 +127,9 @@ public class DealerController : MonoBehaviour
 	private void DisplayCard(Card newCard, bool second)
 	{
 		handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform));
-		handPrefabs[1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f));
+		handPrefabs[handPrefabs.Count - 1].transform.localPosition = new Vector3((hand.Count - 1) * 0.4f, (hand.Count - 1) * 0.001f, 0.0f);
+		handPrefabs[handPrefabs.Count - 1].transform.eulerAngles = new Vector3(90.0f, 0.0f, 0.0f);
+		//handPrefabs[1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
 	}
 
@@ -134,7 +138,7 @@ public class DealerController : MonoBehaviour
 	/// </summary>
 	public void FlipCard()
 	{
-		handPrefabs[1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+		handPrefabs[handPrefabs.Count - 1].transform.eulerAngles = new Vector3(-90.0f, 0.0f, 0.0f);
 	}
 
 	/// <summary>

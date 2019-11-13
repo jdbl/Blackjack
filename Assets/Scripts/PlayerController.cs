@@ -172,13 +172,16 @@ public class PlayerController : MonoBehaviour
 	/// <param name="newCard">New card to be rendered.</param>
 	private void DisplayCard(Card newCard)
 	{
-		handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform));
-
-		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.SetPositionAndRotation(new Vector3((float)((hand[handIndex].Count - 1) * 0.5f),
-			-2.25f + ((handIndex) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+		if(handPrefabs[handIndex].Count == 0)
+		{
+			GameObject handController = Instantiate(new GameObject("handController" + handIndex), this.transform);
+			handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+		}
+		
+		handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform.GetChild(handIndex)));
+		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.localPosition = 
+			new Vector3((float)((hand[handIndex].Count - 1) * 0.4f), (float)((hand[handIndex].Count - 1) * 0.001f), 0.0f);
 		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
-		float temp = (hand[handIndex].Count - 1) * (0.1f);
-		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.Translate(new Vector3(0.0f, 0.0f, ((hand[handIndex].Count - 1) * 0.1f)));
 	}
 	/// <summary>
 	/// Splits 2 card hand into 2 seperate hands. Max 4
@@ -198,20 +201,40 @@ public class PlayerController : MonoBehaviour
 		handValues[handIndex] = hand[handIndex][0].GetFaceValue() + hand[handIndex][1].GetFaceValue();
 		handValues.Add(hand[handCount + 1][0].GetFaceValue());
 
+
+		GameObject handController = Instantiate(new GameObject("handController" + handIndex), this.transform);
+
+		switch(handIndex)
+		{
+			case 0:
+				handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+				break;
+			default:
+				handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+				break;
+		}
+		
+
+
 		handPrefabs.Add(new List<GameObject>());
 		handPrefabs[handCount + 1].Add(handPrefabs[handIndex][1]);
+		handPrefabs[handCount + 1][0].transform.SetParent(handController.transform);
+
 		handPrefabs[handIndex].RemoveAt(1);
 		handPrefabs[handIndex].Add(Instantiate(newCard1.GetPrefab(), this.transform));
 
-
-		handPrefabs[handIndex][1].transform.SetPositionAndRotation(new Vector3((float)((hand[handIndex].Count - 1) * 0.5f),
-			-2.25f + ((handIndex) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+		handPrefabs[handIndex][1].transform.localPosition = new Vector3((float)((hand[handIndex].Count - 1) * 0.4f),
+			(float)((hand[handIndex].Count - 1) * 0.001f), 0.0f);
+		//handPrefabs[handIndex][1].transform.SetPositionAndRotation(new Vector3((float)((hand[handIndex].Count - 1) * 0.5f),
+			//-2.25f + ((handIndex) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[handIndex][1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
-		handPrefabs[handIndex][1].transform.Translate(new Vector3(0.0f, 0.0f, ((hand[handCount + 1].Count - 1) * 0.1f)));
+		//handPrefabs[handIndex][1].transform.Translate(new Vector3(0.0f, 0.0f, ((hand[handCount + 1].Count - 1) * 0.1f)));
 
-		handPrefabs[handCount + 1][0].transform.SetPositionAndRotation(new Vector3(0.0f,
-			-2.25f + ((handCount + 1) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
-		handPrefabs[handCount + 1][0].transform.Translate(new Vector3(0.0f, 0.0f, 0.1f));
+		handPrefabs[handCount + 1][0].transform.localPosition = new Vector3((float)((hand[handIndex].Count - 1) * 0.4f),
+			(float)((hand[handIndex].Count - 1) * 0.001f), 0.0f); 
+		//handPrefabs[handCount + 1][0].transform.SetPositionAndRotation(new Vector3(0.0f,
+		//-2.25f + ((handCount + 1) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+		//handPrefabs[handCount + 1][0].transform.Translate(new Vector3(0.0f, 0.0f, 0.1f));
 
 		PlaceBet(bets[0]);
 		handCount++;
