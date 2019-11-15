@@ -182,7 +182,12 @@ public class PlayerController : MonoBehaviour
 		handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform.GetChild(handIndex)));
 		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.localPosition = 
 			new Vector3((float)((hand[handIndex].Count - 1) * 0.4f), (float)((hand[handIndex].Count - 1) * 0.001f), 0.0f);
-		handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
+        if(handIndex > 0)
+        {
+            this.transform.GetChild(handIndex).GetChild(0).localScale = new Vector3(15.0f, 15.0f, 1.0f);
+            this.transform.GetChild(handIndex-1).transform.localScale = new Vector3(0.66f, 1.0f, 0.66f);
+        } 
+        handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
 	}
 	/// <summary>
 	/// Splits 2 card hand into 2 seperate hands. Max 4
@@ -213,13 +218,13 @@ public class PlayerController : MonoBehaviour
 				break;
 			case 1:
 				handController.transform.localPosition = new Vector3(-1.0f, 0.0f, 2.5f);
-				break;
+                break;
 			case 2:
 				handController.transform.localPosition = new Vector3(1.0f, 0.0f, 2.5f);
-				break;
+                break;
 			default:
 				handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
-				break;
+                break;
 		}
 		
 
@@ -238,13 +243,16 @@ public class PlayerController : MonoBehaviour
 		handPrefabs[handIndex][1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
 		//handPrefabs[handIndex][1].transform.Translate(new Vector3(0.0f, 0.0f, ((hand[handCount + 1].Count - 1) * 0.1f)));
 
-		handPrefabs[handCount + 1][0].transform.localPosition = new Vector3((float)((hand[handIndex].Count - 1) * 0.4f),
-			(float)((hand[handIndex].Count - 1) * 0.001f), 0.0f); 
-		//handPrefabs[handCount + 1][0].transform.SetPositionAndRotation(new Vector3(0.0f,
-		//-2.25f + ((handCount + 1) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
-		//handPrefabs[handCount + 1][0].transform.Translate(new Vector3(0.0f, 0.0f, 0.1f));
+		handPrefabs[handCount + 1][0].transform.localPosition = new Vector3((float)(0.0f),
+			(float)((hand[handIndex].Count - 1) * 0.001f), 0.0f);
+        //handPrefabs[handCount + 1][0].transform.SetPositionAndRotation(new Vector3(0.0f,
+        //-2.25f + ((handCount + 1) * 1.35f), -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
+        //handPrefabs[handCount + 1][0].transform.Translate(new Vector3(0.0f, 0.0f, 0.1f));
 
-		PlaceBet(bets[0]);
+        handPrefabs[handCount + 1][0].transform.localScale = new Vector3(10.0f, 10.0f, 1.0f);
+
+
+        PlaceBet(bets[0]);
 		handCount++;
 	}
 
@@ -284,10 +292,11 @@ public class PlayerController : MonoBehaviour
 		handValues.Add(0);
 		bets.Clear();
 		arrow.transform.position = new Vector3(-2.0f, -2.25f, 0.0f);
-		for(int index= 0; index < this.transform.childCount; index++)
-		{
-			Destroy(this.transform.GetChild(index).gameObject);
-		}
+        foreach(Transform child in this.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        this.transform.DetachChildren();
 	}
 
 	/// <summary>
