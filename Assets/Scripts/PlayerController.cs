@@ -174,7 +174,8 @@ public class PlayerController : MonoBehaviour
 	{
 		if(handPrefabs[handIndex].Count == 0)
 		{
-			GameObject handController = Instantiate(new GameObject("handController" + handIndex), this.transform);
+			GameObject handController = new GameObject("handController" + handIndex);
+			handController.transform.SetParent(this.transform);
 			handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
 		}
 		
@@ -201,13 +202,20 @@ public class PlayerController : MonoBehaviour
 		handValues[handIndex] = hand[handIndex][0].GetFaceValue() + hand[handIndex][1].GetFaceValue();
 		handValues.Add(hand[handCount + 1][0].GetFaceValue());
 
+		GameObject handController = new GameObject("handController" + (handCount + 1));
+		handController.transform.SetParent(this.transform);
 
-		GameObject handController = Instantiate(new GameObject("handController" + handIndex), this.transform);
-
-		switch(handIndex)
+		switch (handCount)
 		{
 			case 0:
-				handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+				handController.transform.localPosition = new Vector3(1.0f, 0.0f, 0.5f);
+				this.transform.GetChild(0).transform.localPosition = new Vector3(-1.0f, 0.0f, 0.5f);
+				break;
+			case 1:
+				handController.transform.localPosition = new Vector3(-1.0f, 0.0f, 2.5f);
+				break;
+			case 2:
+				handController.transform.localPosition = new Vector3(1.0f, 0.0f, 2.5f);
 				break;
 			default:
 				handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
@@ -221,7 +229,7 @@ public class PlayerController : MonoBehaviour
 		handPrefabs[handCount + 1][0].transform.SetParent(handController.transform);
 
 		handPrefabs[handIndex].RemoveAt(1);
-		handPrefabs[handIndex].Add(Instantiate(newCard1.GetPrefab(), this.transform));
+		handPrefabs[handIndex].Add(Instantiate(newCard1.GetPrefab(), this.transform.GetChild(handIndex)));
 
 		handPrefabs[handIndex][1].transform.localPosition = new Vector3((float)((hand[handIndex].Count - 1) * 0.4f),
 			(float)((hand[handIndex].Count - 1) * 0.001f), 0.0f);
@@ -276,7 +284,10 @@ public class PlayerController : MonoBehaviour
 		handValues.Add(0);
 		bets.Clear();
 		arrow.transform.position = new Vector3(-2.0f, -2.25f, 0.0f);
-        
+		for(int index= 0; index < this.transform.childCount; index++)
+		{
+			Destroy(this.transform.GetChild(index).gameObject);
+		}
 	}
 
 	/// <summary>
