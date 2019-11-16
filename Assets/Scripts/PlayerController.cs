@@ -57,13 +57,17 @@ public class PlayerController : MonoBehaviour
     private bool[] handFinished = { false, false, false, false };
     private int credit;
     private List<List<GameObject>> handPrefabs = new List<List<GameObject>>();
-
+	private GameObject scoreText;
 	// Start is called before the first frame update
 	void Start()
 	{
 		hand.Add(new List<Card>());
 	}
-
+	private void Update()
+	{
+		if(scoreText != null)
+			scoreText.transform.position = Camera.main.WorldToViewportPoint(this.transform.position);
+	}
 	public int Credit
 	{
 		get { return credit; }
@@ -177,6 +181,24 @@ public class PlayerController : MonoBehaviour
 			GameObject handController = new GameObject("handController" + handIndex);
 			handController.transform.SetParent(this.transform);
 			handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+
+			float offsetProp = 0.01f;
+			RectTransform canvasRect = this.transform.parent.Find("Canvas").gameObject.GetComponent<RectTransform>();
+			float propDist = canvasRect.rect.y * -offsetProp;
+			float offset = handController.transform.position.y + handController.transform.position.y + propDist;
+			Vector3 offsetPos = new Vector3(handController.transform.position.x, offset, handController.transform.position.z);
+
+			
+			scoreText = new GameObject("scoreText");
+			scoreText.transform.SetParent(this.transform.parent.Find("Canvas"));
+			
+			Text text = scoreText.AddComponent<Text>();
+			text.font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+			text.text = "111";
+			text.fontSize = 80;
+			text.color = new Color(0.0f, 0.0f, 0.0f, 255.0f);
+			scoreText.transform.localPosition = Camera.main.WorldToViewportPoint(handController.transform.position);
+			text.rectTransform.anchoredPosition = new Vector2(0.0f, 0.0f);
 		}
 		
 		handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform.GetChild(handIndex)));
