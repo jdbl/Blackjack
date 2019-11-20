@@ -57,17 +57,13 @@ public class PlayerController : MonoBehaviour
     private bool[] handFinished = { false, false, false, false };
     private int credit;
     private List<List<GameObject>> handPrefabs = new List<List<GameObject>>();
-	private GameObject scoreText;
+	private List<GameObject> scoreText = new List<GameObject>();
 	// Start is called before the first frame update
 	void Start()
 	{
 		hand.Add(new List<Card>());
 	}
-	private void Update()
-	{
-		if(scoreText != null)
-			scoreText.transform.position = Camera.main.WorldToViewportPoint(this.transform.position);
-	}
+
 	public int Credit
 	{
 		get { return credit; }
@@ -130,26 +126,26 @@ public class PlayerController : MonoBehaviour
 	/// <param name="newCard">New card to be added to the hand.</param>
 	public void AddToHand(Card newCard)
 	{//Add new card dealt to players hand
-		if(hand.Count == 0)
+		if (hand.Count == 0)
 		{
 			hand.Add(new List<Card>());
 			handPrefabs.Add(new List<GameObject>());
 		}
 
-		if((handValues[handIndex] + newCard.GetFaceValue() > 21) && (newCard.GetFaceValue() == 11))
+		if ((handValues[handIndex] + newCard.GetFaceValue() > 21) && (newCard.GetFaceValue() == 11))
 		{//Add new value to hand
-			//If new value is an ace that puts it into bust it sets it to 1 and adds
+		 //If new value is an ace that puts it into bust it sets it to 1 and adds
 			newCard.ChangeAceFaceValue();
 		}
 		else if (handValues[handIndex] + newCard.GetFaceValue() > 21)
 		{
-			for(int index = 0; index < hand[handIndex].Count; index++)
+			for (int index = 0; index < hand[handIndex].Count; index++)
 			{
-				if(hand[handIndex][index].GetFaceValue() == 11)
+				if (hand[handIndex][index].GetFaceValue() == 11)
 				{
 					hand[handIndex][index].ChangeAceFaceValue();
 					handValues[handIndex] -= 10;
-					if(handValues[handIndex] + newCard.GetFaceValue() <= 21)
+					if (handValues[handIndex] + newCard.GetFaceValue() <= 21)
 					{
 						index = hand[handIndex].Count;
 					}
@@ -182,23 +178,7 @@ public class PlayerController : MonoBehaviour
 			handController.transform.SetParent(this.transform);
 			handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
 
-			float offsetProp = 0.01f;
-			RectTransform canvasRect = this.transform.parent.Find("Canvas").gameObject.GetComponent<RectTransform>();
-			float propDist = canvasRect.rect.y * -offsetProp;
-			float offset = handController.transform.position.y + handController.transform.position.y + propDist;
-			Vector3 offsetPos = new Vector3(handController.transform.position.x, offset, handController.transform.position.z);
-
-			
-			scoreText = new GameObject("scoreText");
-			scoreText.transform.SetParent(this.transform.parent.Find("Canvas"));
-			
-			Text text = scoreText.AddComponent<Text>();
-			text.font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
-			text.text = "111";
-			text.fontSize = 80;
-			text.color = new Color(0.0f, 0.0f, 0.0f, 255.0f);
-			scoreText.transform.localPosition = Camera.main.WorldToViewportPoint(handController.transform.position);
-			text.rectTransform.anchoredPosition = new Vector2(0.0f, 0.0f);
+			CreateScoreText();
 		}
 		
 		handPrefabs[handIndex].Add(Instantiate(newCard.GetPrefab(), this.transform.GetChild(handIndex)));
@@ -210,7 +190,35 @@ public class PlayerController : MonoBehaviour
             this.transform.GetChild(handIndex-1).transform.localScale = new Vector3(0.66f, 1.0f, 0.66f);
         } 
         handPrefabs[handIndex][handPrefabs[handIndex].Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
+
+		UpdateScoreTextPosition(handIndex);
+		
 	}
+
+	private void UpdateScoreTextPosition(int index)
+	{
+		int textOverMesh = handPrefabs[index].Count / 2;
+		MeshRenderer cardMesh = handPrefabs[index][textOverMesh].GetComponent<MeshRenderer>();
+		Vector3 topOfHand = new Vector3(this.transform.GetChild(index).position.x,
+			cardMesh.bounds.max.y, cardMesh.bounds.max.z);
+		scoreText[index].transform.position = Camera.main.WorldToScreenPoint(topOfHand);
+	}
+
+	private void CreateScoreText()
+	{
+		scoreText.Add(new GameObject("scoreText"));
+		scoreText[scoreText.Count - 1].transform.SetParent(this.transform.parent.Find("Canvas"));
+
+		Text text = scoreText[scoreText.Count - 1].AddComponent<Text>();
+		text.rectTransform.anchorMax = new Vector2(0.0f, 0.0f);
+		text.rectTransform.anchorMin = new Vector2(0.0f, 0.0f);
+		text.rectTransform.pivot = new Vector2(0.0f, 0.0f);
+		text.font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+		text.text = "";
+		text.fontSize = 80;
+		text.color = new Color(0.0f, 0.0f, 0.0f, 255.0f);
+	}
+
 	/// <summary>
 	/// Splits 2 card hand into 2 seperate hands. Max 4
 	/// </summary>
@@ -273,8 +281,11 @@ public class PlayerController : MonoBehaviour
 
         handPrefabs[handCount + 1][0].transform.localScale = new Vector3(10.0f, 10.0f, 1.0f);
 
+		UpdateScoreTextPosition(scoreText.Count - 1);
 
-        PlaceBet(bets[0]);
+		CreateScoreText();
+
+		PlaceBet(bets[0]);
 		handCount++;
 	}
 
@@ -318,6 +329,11 @@ public class PlayerController : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+		foreach(GameObject handScore in scoreText)
+		{
+			Destroy(handScore);
+		}
+		scoreText.Clear();
         this.transform.DetachChildren();
 	}
 
@@ -392,5 +408,10 @@ public class PlayerController : MonoBehaviour
 	public int GetHandIndex()
 	{
 		return handIndex;
+	}
+
+	public List<GameObject> ScoreText
+	{
+		get { return scoreText; }
 	}
 }

@@ -377,11 +377,15 @@ public class GameManager : MonoBehaviour
 			for (int index = player.GetHandValues().Count - 1; index >= 0; index--)
 			{
 				value = player.GetHandValues()[index];
+				if (player.ScoreText[index] != null)
+				{
+					player.ScoreText[index].GetComponent<Text>().text = value.ToString();
+				}
 				if (value > 21)
 				{
 					playerHandText.text += System.Environment.NewLine +
 					value.ToString() + " BUST";
-
+					
 				}
 				else if (value == 21 && player.GetHand()[index].Count == 2)
 				{
