@@ -187,6 +187,14 @@ public class GameManager : MonoBehaviour
 				}
 			}
 		}
+        if(currentBet <= 0)
+        {
+            betButton.gameObject.SetActive(false);
+        }
+        else if(!betButton.gameObject.activeSelf)
+        {
+            betButton.gameObject.SetActive(true);
+        }
 	}
 
     /// <summary>

@@ -40,12 +40,18 @@ public class DealerController : MonoBehaviour
 	private int handValue = 0;
 	private bool handFinished = false;
 	private List<GameObject> handPrefabs = new List<GameObject>();
-	
-	/// <summary>
-	/// Returns current dealer hand.
-	/// </summary>
-	/// <returns>List(Card)</returns>
-	public List<Card> GetHand()
+    private Vector3 initialPosition = new Vector3();
+
+    private void Start()
+    {
+        initialPosition = transform.position;
+    }
+
+    /// <summary>
+    /// Returns current dealer hand.
+    /// </summary>
+    /// <returns>List(Card)</returns>
+    public List<Card> GetHand()
 	{
 		return hand;
 	}
@@ -117,6 +123,11 @@ public class DealerController : MonoBehaviour
 		handPrefabs[handPrefabs.Count - 1].transform.localPosition = new Vector3((hand.Count - 1) * 0.4f, (hand.Count -1) * 0.001f, 0.0f);
 		//handPrefabs[handPrefabs.Count-1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[handPrefabs.Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
+        if(handPrefabs.Count > 2)
+        {
+            this.transform.position = this.transform.position;
+            this.transform.localPosition = this.transform.localPosition;
+        }
 	}
 
 	/// <summary>
@@ -150,6 +161,7 @@ public class DealerController : MonoBehaviour
 		handFinished = false;
 		handValue = 0;
 		cardCount = 0;
+        transform.position = initialPosition;
 		try
 		{
 			foreach (GameObject temp in handPrefabs)
