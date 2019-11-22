@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-
-
-
-
 /// <summary>
 /// Creates a full deck of cards and deals and reshuffles wherever needed.
 /// </summary>
@@ -67,17 +63,17 @@ public class DeckOfCards : MonoBehaviour
 	{
 		System.Random random = new System.Random();
 		int currentCount = deck.Count;
-        
-		for(int index = deck.Count -1; index > 1; index--)
+
+		for (int index = deck.Count - 1; index > 1; index--)
 		{
 			int randomNumber = random.Next(index + 1);
 
 			Card value = deck[randomNumber];
 			deck[randomNumber] = deck[index];
 			deck[index] = value;
-            
+
 		}
-		
+
 	}
 
 	/// <summary>

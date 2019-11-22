@@ -399,7 +399,11 @@ public class GameManager : MonoBehaviour
 				{
 					playerHandText.text += System.Environment.NewLine +
 					value.ToString() + " BLACKJACK";
-					Stand();
+					if(player.GetHandIndex() == index)
+					{
+						Stand();
+					}
+					
 				}
 				else
 				{
@@ -574,13 +578,12 @@ public class GameManager : MonoBehaviour
 
             
 		}
-		creditText.text = "Credit: " + player.Credit.ToString() + System.Environment.NewLine + "Last Bet: " + lastBet.ToString();
+		creditText.text = player.Credit.ToString();
 
 		if (player.Credit < 5)
 		{
 			gameOverImage.gameObject.SetActive(true);
 			betButton.gameObject.SetActive(false);
-			//betSlider.interactable = false;
 		}
 	}
 
