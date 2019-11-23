@@ -41,6 +41,7 @@ public class DealerController : MonoBehaviour
 	private bool handFinished = false;
 	private List<GameObject> handPrefabs = new List<GameObject>();
     private Vector3 initialPosition = new Vector3();
+	private GameObject scoreText = null;
 
     private void Start()
     {
@@ -105,7 +106,7 @@ public class DealerController : MonoBehaviour
 				this.transform.Translate(new Vector3(-0.2f, 0.0f, 0.0f));
 			}
 		}
-        
+
 		cardCount++;
 		if (handValue >= 17)
 		{
@@ -119,15 +120,26 @@ public class DealerController : MonoBehaviour
 	/// <param name="newCard">New card to be rendered.</param>
 	private void DisplayCard(Card newCard)
 	{
-		handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform));
+		if (handPrefabs.Count == 0)
+		{
+			GameObject handController = new GameObject("dealerHandController");
+			handController.transform.SetParent(this.transform);
+			handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+
+			CreateScoreText();
+		}
+
+		//handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform));
+		handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform.GetChild(0)));
 		handPrefabs[handPrefabs.Count - 1].transform.localPosition = new Vector3((hand.Count - 1) * 0.4f, (hand.Count -1) * 0.001f, 0.0f);
 		//handPrefabs[handPrefabs.Count-1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(180.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[handPrefabs.Count - 1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
-        if(handPrefabs.Count > 2)
+		/*if(handPrefabs.Count > 2)
         {
             this.transform.position = this.transform.position;
             this.transform.localPosition = this.transform.localPosition;
-        }
+        }*/
+		UpdateScoreTextPosition();
 	}
 
 	/// <summary>
@@ -137,13 +149,36 @@ public class DealerController : MonoBehaviour
 	/// <param name="second">Render card face down</param>
 	private void DisplayCard(Card newCard, bool second)
 	{
-		handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform));
+		handPrefabs.Add(Instantiate(newCard.GetPrefab(), this.transform.GetChild(0)));
 		handPrefabs[handPrefabs.Count - 1].transform.localPosition = new Vector3((hand.Count - 1) * 0.4f, (hand.Count - 1) * 0.001f, 0.0f);
 		handPrefabs[handPrefabs.Count - 1].transform.eulerAngles = new Vector3(90.0f, 0.0f, 0.0f);
 		//handPrefabs[1].transform.SetPositionAndRotation(new Vector3((float)hand.Count, 3.5f, -1.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f));
 		handPrefabs[1].transform.localScale = new Vector3(15.0f, 15.0f, 1.0f);
+		UpdateScoreTextPosition();
+	}
+	private void UpdateScoreTextPosition()
+	{
+		int textOverMesh = handPrefabs.Count / 2;
+		MeshRenderer cardMesh = handPrefabs[textOverMesh].GetComponent<MeshRenderer>();
+		Vector3 topOfHand = new Vector3(this.transform.GetChild(0).position.x,
+			cardMesh.bounds.max.y, cardMesh.bounds.max.z);
+		scoreText.transform.position = Camera.main.WorldToScreenPoint(topOfHand);
 	}
 
+	private void CreateScoreText()
+	{
+		scoreText = new GameObject("dealerScoreText");
+		scoreText.transform.SetParent(this.transform.parent.Find("Canvas"));
+
+		Text text = scoreText.AddComponent<Text>();
+		text.rectTransform.anchorMax = new Vector2(0.0f, 0.0f);
+		text.rectTransform.anchorMin = new Vector2(0.0f, 0.0f);
+		text.rectTransform.pivot = new Vector2(0.0f, 0.0f);
+		text.font = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+		text.text = "";
+		text.fontSize = 80;
+		text.color = new Color(0.0f, 0.0f, 0.0f, 255.0f);
+	}
 	/// <summary>
 	/// Flip second dealer card facing up.
 	/// </summary>
@@ -162,12 +197,15 @@ public class DealerController : MonoBehaviour
 		handValue = 0;
 		cardCount = 0;
         transform.position = initialPosition;
+		
 		try
 		{
+			Destroy(scoreText);
 			foreach (GameObject temp in handPrefabs)
 			{
 				Destroy(temp);
 			}
+			
 			handPrefabs.Clear();
 		}
 		catch { }
@@ -210,5 +248,10 @@ public class DealerController : MonoBehaviour
 	public List<GameObject> GetHandPrefabs()
 	{
 		return handPrefabs;
+	}
+
+	public GameObject ScoreText
+	{
+		get { return scoreText; }
 	}
 }

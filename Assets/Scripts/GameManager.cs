@@ -65,10 +65,7 @@ public class GameManager : MonoBehaviour
 	//private Canvas mainCanvas;
 	[SerializeField]
 	private DeckOfCards deck = null;
-	[SerializeField]
-	private Text playerHandText = null;
-	[SerializeField]
-	private Text dealerHandText = null;
+
 	[SerializeField]
 	private Button betButton = null;
 	[SerializeField]
@@ -121,7 +118,7 @@ public class GameManager : MonoBehaviour
 		hitButton.gameObject.SetActive(false);
 		doubleButton.gameObject.SetActive(false);
 		gameOverImage.gameObject.SetActive(false);
-
+		betButton.gameObject.SetActive(false);
 	}
 
     private void Update()
@@ -159,11 +156,19 @@ public class GameManager : MonoBehaviour
 						{
 							UpdateBet(hitChip.ChipValue, false, hitChip);
 						}
+						if (currentBet <= 0)
+						{
+							betButton.gameObject.SetActive(false);
+						}
+						else if (!betButton.gameObject.activeSelf)
+						{
+							betButton.gameObject.SetActive(true);
+						}
 					}
 				}
 			}
 		}
-		if(Input.anyKey)
+		/*if(Input.anyKey)
 		{
 			if(Input.GetMouseButtonDown(0))
 			{
@@ -183,18 +188,19 @@ public class GameManager : MonoBehaviour
 						{
 							UpdateBet(hitChip.ChipValue, false, hitObject);
 						}
+						if (currentBet <= 0)
+						{
+							betButton.gameObject.SetActive(false);
+						}
+						else if (!betButton.gameObject.activeSelf)
+						{
+							betButton.gameObject.SetActive(true);
+						}
 					}
 				}
 			}
-		}
-        if(currentBet <= 0)
-        {
-            betButton.gameObject.SetActive(false);
-        }
-        else if(!betButton.gameObject.activeSelf)
-        {
-            betButton.gameObject.SetActive(true);
-        }
+		}*/
+        
 	}
 
     /// <summary>
@@ -278,6 +284,7 @@ public class GameManager : MonoBehaviour
 	{
 
 		ResetGame();
+		canBet = false;
 		//betSlider.interactable = false;
 		betButton.gameObject.SetActive(false);
 		//lastBet = (int)betSlider.value;
@@ -293,8 +300,6 @@ public class GameManager : MonoBehaviour
 
 		deck.BuildDeck();
 		deck.ShuffleDeck();
-		dealerHandText.text = "DEALER: ";
-		playerHandText.text = "PLAYER: ";
 		insuranceText.text = "Do you want insurance?";
 		insuranceBlackjack = false;
 
@@ -378,7 +383,6 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	public void UpdateCardValues()
 	{
-		playerHandText.text = "Player: ";
 		int value = 0;
 		if (playerTurn)
 		{
@@ -389,16 +393,23 @@ public class GameManager : MonoBehaviour
 				{
 					player.ScoreText[index].GetComponent<Text>().text = value.ToString();
 				}
-				if (value > 21)
+				dealer.ScoreText.GetComponent<Text>().text = dealer.GetHand()[0].GetFaceValue().ToString();
+				if (value == 21 && player.GetHand()[index].Count == 2)
 				{
-					playerHandText.text += System.Environment.NewLine +
-					value.ToString() + " BUST";
-					
+
+					if (player.GetHandIndex() == index)
+					{
+						Stand();
+					}
+
+				}
+				/*if (value > 21)
+				{
+
 				}
 				else if (value == 21 && player.GetHand()[index].Count == 2)
 				{
-					playerHandText.text += System.Environment.NewLine +
-					value.ToString() + " BLACKJACK";
+
 					if(player.GetHandIndex() == index)
 					{
 						Stand();
@@ -407,39 +418,35 @@ public class GameManager : MonoBehaviour
 				}
 				else
 				{
-					playerHandText.text += System.Environment.NewLine +
-					value.ToString();
-				}
+
+				}*/
 
 			}
 		}
 		else
 		{
-			for (int index = player.GetHandValues().Count - 1; index >= 0; index--)
+			dealer.ScoreText.GetComponent<Text>().text = dealer.GetHandValue().ToString();
+			/*for (int index = player.GetHandValues().Count - 1; index >= 0; index--)
 			{
 				value = player.GetHandValues()[index];
 				if (value > 21)
 				{
-					playerHandText.text += System.Environment.NewLine + value.ToString() + " BUST";
 
 				}
 				else if (value == 21 && player.GetHand()[index].Count == 2)
 				{
-					playerHandText.text += System.Environment.NewLine + value.ToString() + " BLACKJACK";
 				}
 				else if (value == dealer.GetHandValue())
 				{
-					playerHandText.text += System.Environment.NewLine + value.ToString() + " PUSH";
 				}
 				else if (value > dealer.GetHandValue() || dealer.GetHandValue() > 21)
 				{
-					playerHandText.text += System.Environment.NewLine + value.ToString() + " WIN";
 				}
 				else
 				{
-					playerHandText.text += System.Environment.NewLine + value.ToString() + " LOSE";
 				}
-			}
+			}*/
+
 		}
 
 	}
@@ -507,27 +514,25 @@ public class GameManager : MonoBehaviour
 		}
         
 		int value = dealer.GetHandValue();
-		dealerHandText.text = "DEALER: ";
+
 		if (value > 21)
 		{
-			dealerHandText.text += System.Environment.NewLine +
-			value.ToString() + " BUST";
+
 
 		}
 		else if (value == 21 && dealer.GetHand().Count == 2)
 		{
-			dealerHandText.text += System.Environment.NewLine +
-			value.ToString() + " BLACKJACK";
+
 		}
 		else 
 		{
-			dealerHandText.text += System.Environment.NewLine +
-			value.ToString();
+
 		}
 		UpdateCardValues();
 		CalculateWinnings();
 		//betSlider.maxValue = player.Credit;
 		betButton.gameObject.SetActive(true);
+		canBet = true;
 		//betSlider.interactable = true;
 		splitButton.gameObject.SetActive(false);
 		doubleButton.gameObject.SetActive(false);
@@ -540,7 +545,8 @@ public class GameManager : MonoBehaviour
 	private void ResetGame()
 	{
 		//betSlider.interactable = true;
-		betButton.gameObject.SetActive(true);
+		betButton.gameObject.SetActive(false);
+		canBet = true;
 		player.ResetHand();
 		dealer.ResetHand();
         
@@ -578,7 +584,7 @@ public class GameManager : MonoBehaviour
 
             
 		}
-		creditText.text = player.Credit.ToString();
+		creditText.text = ConvertToDollars(player.Credit);
 
 		if (player.Credit < 5)
 		{
