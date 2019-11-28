@@ -69,6 +69,8 @@ public class GameManager : MonoBehaviour
 	[SerializeField]
 	private Button betButton = null;
 	[SerializeField]
+	private Button redoBetButton = null;
+	[SerializeField]
 	private Button standButton = null;
 	[SerializeField]
 	private Button splitButton = null;
@@ -90,6 +92,8 @@ public class GameManager : MonoBehaviour
 	private GameObject BetArea = null;
 	[SerializeField]
 	private AllChips allChips = null;
+	[SerializeField]
+	private Text testText = null;
 
 
 	private List<Text> handResultsText;
@@ -100,7 +104,8 @@ public class GameManager : MonoBehaviour
 	private int lastBet = 0;
 	private bool canBet = false;
 	private int currentBet = 0;
-    private readonly System.Random random = new System.Random();
+	private List<Chip> betChips;
+	private readonly System.Random random = new System.Random();
 
 	// Start is called before the first frame update
 	void Start()
@@ -111,6 +116,7 @@ public class GameManager : MonoBehaviour
 		player.Credit = STARTING_CREDIT;
 		player.ResetHand();
 		handResultsText = new List<Text>();
+		betChips = new List<Chip>();
 		creditText.text = ConvertToDollars(player.Credit);
 		canBet = true;
 		standButton.gameObject.SetActive(false);
@@ -119,6 +125,7 @@ public class GameManager : MonoBehaviour
 		doubleButton.gameObject.SetActive(false);
 		gameOverImage.gameObject.SetActive(false);
 		betButton.gameObject.SetActive(false);
+		redoBetButton.gameObject.SetActive(false);
 	}
 
     private void Update()
@@ -145,7 +152,7 @@ public class GameManager : MonoBehaviour
 				{ 
 					GameObject hitObject = hit.collider.gameObject;
 					Chip hitChip = allChips.FindChipByName(hitObject.name);
-
+					
 					if (hitChip != null)
 					{
 						if(hitObject.transform.parent.name == "ChipBlock")
@@ -154,21 +161,23 @@ public class GameManager : MonoBehaviour
 						}
 						else if(hitObject.transform.parent.name == "BetArea")
 						{
-							UpdateBet(hitChip.ChipValue, false, hitChip);
+							UpdateBet(hitChip.ChipValue, false, hitObject);
 						}
 						if (currentBet <= 0)
 						{
 							betButton.gameObject.SetActive(false);
+							EnableRedoBet();
 						}
 						else if (!betButton.gameObject.activeSelf)
 						{
 							betButton.gameObject.SetActive(true);
+							redoBetButton.gameObject.SetActive(false);
 						}
 					}
 				}
 			}
 		}
-		/*if(Input.anyKey)
+		if(Input.anyKey)
 		{
 			if(Input.GetMouseButtonDown(0))
 			{
@@ -177,7 +186,6 @@ public class GameManager : MonoBehaviour
 				{
 					GameObject hitObject = hit.collider.gameObject;
 					Chip hitChip = allChips.FindChipByName(hitObject.name);
-					betText.text = "111";
 					if (hitChip != null)
 					{
 						if (hitObject.transform.parent.name == "ChipBlock")
@@ -191,28 +199,30 @@ public class GameManager : MonoBehaviour
 						if (currentBet <= 0)
 						{
 							betButton.gameObject.SetActive(false);
+							EnableRedoBet();
 						}
 						else if (!betButton.gameObject.activeSelf)
 						{
 							betButton.gameObject.SetActive(true);
+							redoBetButton.gameObject.SetActive(false);
 						}
 					}
 				}
 			}
-		}*/
+		}
         
 	}
 
     /// <summary>
     /// Update user bet on display
     /// </summary>
-    public void UpdateBet(int betValue, bool increase, object chip)
+    private void UpdateBet(int betValue, bool increase, object chip)
 	{
 		//betText.text = "Bet: " + System.Math.Round(betSlider.value, 2).ToString();
 
 		if (increase)
 		{
-			if(currentBet + betValue <= player.Credit)
+			if (currentBet + betValue <= player.Credit)
 			{
 				AddChipToBet((Chip)chip);
 				currentBet += betValue;
@@ -229,12 +239,23 @@ public class GameManager : MonoBehaviour
 		
 	}
 
+	public void RedoLastBet()
+	{
+		foreach(Chip chip in betChips)
+		{
+			UpdateBet(chip.ChipValue, true, chip);
+		}
+		redoBetButton.gameObject.SetActive(false);
+		betButton.gameObject.SetActive(true);
+	}
+
+
 	/// <summary>
 	/// Creates a new chip 
 	/// </summary>
 	/// <param name="chip"></param>
 	private void AddChipToBet(Chip chip)
-	{/// TODO add random chip locations in bet area. get parent render bounds and xy random range 
+	{
 		//Instantiate(chip.Prefab, new Vector3(0.0f, -1.0f, 0.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f), BetArea.transform);
 		GameObject newChip = Instantiate(chip.Prefab);
 		newChip.transform.SetParent(BetArea.transform);
@@ -287,7 +308,13 @@ public class GameManager : MonoBehaviour
 		canBet = false;
 		//betSlider.interactable = false;
 		betButton.gameObject.SetActive(false);
+		redoBetButton.gameObject.SetActive(false);
 		//lastBet = (int)betSlider.value;
+		betChips.Clear();
+		foreach(Transform chip in BetArea.transform)
+		{
+			betChips.Add(allChips.FindChipByName(chip.gameObject.name));
+		}
 		lastBet = currentBet;
 		player.PlaceBet(currentBet);
 		standButton.gameObject.SetActive(true);
@@ -531,7 +558,7 @@ public class GameManager : MonoBehaviour
 		UpdateCardValues();
 		CalculateWinnings();
 		//betSlider.maxValue = player.Credit;
-		betButton.gameObject.SetActive(true);
+		EnableRedoBet();
 		canBet = true;
 		//betSlider.interactable = true;
 		splitButton.gameObject.SetActive(false);
@@ -562,35 +589,42 @@ public class GameManager : MonoBehaviour
 
 		for(int index = 0; index < player.GetHandValues().Count; index++ )
 		{
-		if (player.GetHandValues()[index] == dealer.GetHandValue() )
-		{//PUSH
-			player.Credit = player.Credit + player.GetBets()[index];
-		}
-		else if (player.GetHandValues()[index] == 21 && player.GetHand()[index].Count == 2)
-		{//BLACKJACK
-			player.Credit = (int)(player.Credit + player.GetBets()[index] * 2.5f);
+			if (player.GetHandValues()[index] == dealer.GetHandValue() )
+			{//PUSH
+				player.Credit = player.Credit + player.GetBets()[index];
+			}
+			else if (player.GetHandValues()[index] == 21 && player.GetHand()[index].Count == 2)
+			{//BLACKJACK
+				player.Credit = (int)(player.Credit + player.GetBets()[index] * 2.5f);
 
-		}
-		else if(player.GetHandValues()[index] > dealer.GetHandValue() && player.GetHandValues()[index] <=21)
-		{//WIN
-			player.Credit = player.Credit + (player.GetBets()[index]) * 2;
+			}
+			else if(player.GetHandValues()[index] > dealer.GetHandValue() && player.GetHandValues()[index] <=21)
+			{//WIN
+				player.Credit = player.Credit + (player.GetBets()[index]) * 2;
 
-		}
-		else if(player.GetHandValues()[index] <= 21 && dealer.GetHandValue() > 21)
-		{//WIN
-			player.Credit = player.Credit + (player.GetBets()[index]) * 2;
+			}
+			else if(player.GetHandValues()[index] <= 21 && dealer.GetHandValue() > 21)
+			{//WIN
+				player.Credit = player.Credit + (player.GetBets()[index]) * 2;
 
-		}
+			}
 
             
 		}
 		creditText.text = ConvertToDollars(player.Credit);
 
-		if (player.Credit < 5)
+		if (player.Credit <= 0)
 		{
 			gameOverImage.gameObject.SetActive(true);
 			betButton.gameObject.SetActive(false);
 		}
+		foreach(Transform chip in BetArea.transform)
+		{
+			Destroy(chip.gameObject);
+		}
+		currentBet = 0;
+		betText.text = ConvertToDollars(currentBet);
+		EnableRedoBet();
 	}
 
 	/// <summary>
@@ -767,9 +801,22 @@ public class GameManager : MonoBehaviour
 		player.DoubleBet(0);
 		Deal();
 		Stand();
-		betButton.gameObject.SetActive(true);
-		//betSlider.interactable = true;
+		betButton.gameObject.SetActive(false);
+		EnableRedoBet();
+
 	}
 
-	
+	private void EnableRedoBet()
+	{
+		if (player.Credit < lastBet)
+		{
+			redoBetButton.gameObject.SetActive(false);
+		}
+		else if (lastBet != 0)
+		{
+
+			redoBetButton.gameObject.SetActive(true);
+
+		}
+	}
 }

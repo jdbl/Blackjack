@@ -47,8 +47,7 @@ public class PlayerController : MonoBehaviour
     private List<List<Card>> hand = new List<List<Card>>();
     //[SerializeField]
     //private Text creditText = null;
-	[SerializeField]
-	private GameObject arrow = null;
+
 
     private int cardIndex = 0;
     private int handIndex = 0;
@@ -324,7 +323,6 @@ public class PlayerController : MonoBehaviour
 		handValues.Clear();
 		handValues.Add(0);
 		bets.Clear();
-		arrow.transform.position = new Vector3(-2.0f, -2.25f, 0.0f);
         foreach(Transform child in this.transform)
         {
             Destroy(child.gameObject);
@@ -353,7 +351,6 @@ public class PlayerController : MonoBehaviour
 			if(handCount > handIndex )
 			{
 				handIndex++;
-				arrow.transform.Translate(new Vector3(-1.35f, 0.0f, 0.0f));
 			}
 		}
 		catch(System.IndexOutOfRangeException e)
@@ -414,4 +411,6 @@ public class PlayerController : MonoBehaviour
 	{
 		get { return scoreText; }
 	}
+
+
 }
