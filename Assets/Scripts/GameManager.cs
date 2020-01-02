@@ -96,6 +96,7 @@ public class GameManager : MonoBehaviour
 	private Text testText = null;
 
 
+	
 	private List<Text> handResultsText;
 	public static int deckNumbers = 1;
 	private bool playerTurn = true;
@@ -110,6 +111,7 @@ public class GameManager : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
 	{
+
 		deck.BuildDeck();
 		deck.ShuffleDeck();
 		allChips.MakeChips();
