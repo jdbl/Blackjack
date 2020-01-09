@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviour
 	//private Canvas mainCanvas;
 	[SerializeField]
 	private DeckOfCards deck = null;
-
+    
 	[SerializeField]
 	private Button betButton = null;
 	[SerializeField]
