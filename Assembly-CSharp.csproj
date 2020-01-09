@@ -84,12 +84,15 @@
     </Reference>
     <Reference Include="Unity.Analytics.DataPrivacy">
       <HintPath>C:/Users/hp/Documents/repos/Blackjack/Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll</HintPath>
+<<<<<<< HEAD
     </Reference>
     <Reference Include="UnityEngine.Monetization">
       <HintPath>C:/Users/jebrown/Documents/repos/Blackjack/Library/ScriptAssemblies/UnityEngine.Monetization.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Advertisements">
       <HintPath>C:/Users/jebrown/Documents/repos/Blackjack/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
+=======
+>>>>>>> origin
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
