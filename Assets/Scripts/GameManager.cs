@@ -107,15 +107,28 @@ public class GameManager : MonoBehaviour
 	private int currentBet = 0;
 	private List<Chip> betChips;
 	private readonly System.Random random = new System.Random();
+	private Vector3 startPos;
+	private Vector3 direction;
+	private float deltaX;
+	public float chipMoveSpeed = 0.0f;
+	private SaveAndLoad saveAndLoad;
 
 	// Start is called before the first frame update
 	void Start()
 	{
-
+		saveAndLoad = new SaveAndLoad();
+		if(saveAndLoad.Load())
+		{
+			player.Credit = saveAndLoad.Credit;
+		}
+		else
+		{
+			player.Credit = STARTING_CREDIT;
+		}
 		deck.BuildDeck();
 		deck.ShuffleDeck();
 		allChips.MakeChips();
-		player.Credit = STARTING_CREDIT;
+		
 		player.ResetHand();
 		handResultsText = new List<Text>();
 		betChips = new List<Chip>();
@@ -144,42 +157,140 @@ public class GameManager : MonoBehaviour
 	/// </summary>
 	private void ChangeBet()
 	{
-		
-		foreach (Touch touch in Input.touches)
+		if(Input.touchCount == 1)
 		{
-			if (touch.phase == TouchPhase.Ended)
+			Touch touch = Input.GetTouch(0);
+			Ray ray = Camera.main.ScreenPointToRay(touch.position);
+			if(Physics.Raycast(ray, out RaycastHit hit, 100.0f))
 			{
-				Ray ray = Camera.main.ScreenPointToRay(touch.position);
-				if (Physics.Raycast(ray, out RaycastHit hit, 100.0f))
-				{ 
-					GameObject hitObject = hit.collider.gameObject;
-					Chip hitChip = allChips.FindChipByName(hitObject.name);
+				GameObject hitObject = hit.collider.gameObject;
+				if(hitObject.transform.name == "ChipBlock" || hitObject.transform.parent.name == "ChipBlock")
+				{
 					
-					if (hitChip != null)
+					startPos = Camera.main.ScreenToWorldPoint(touch.position);
+					
+					switch (touch.phase)
 					{
-						if(hitObject.transform.parent.name == "ChipBlock")
-						{
-							UpdateBet(hitChip.ChipValue, true, hitChip);
-						}
-						else if(hitObject.transform.parent.name == "BetArea")
-						{
-							UpdateBet(hitChip.ChipValue, false, hitObject);
-						}
-						if (currentBet <= 0)
-						{
-							betButton.gameObject.SetActive(false);
-							EnableRedoBet();
-						}
-						else if (!betButton.gameObject.activeSelf)
-						{
-							betButton.gameObject.SetActive(true);
-							redoBetButton.gameObject.SetActive(false);
-						}
+
+						case TouchPhase.Began:
+							//testText.text = "began";
+							deltaX = 0.0f;
+							direction = startPos;
+							break;
+
+						case TouchPhase.Moved:
+							if (hitObject.transform.name != "ChipBlock")
+							{
+								hitObject = hitObject.transform.parent.gameObject;
+							}
+							//testText.text = "moved";
+							if (hitObject.transform.localPosition.x + (startPos.x - direction.x) < 5.0f && hitObject.transform.localPosition.x + (startPos.x - direction.x) > 0.0f)
+							{
+								hitObject.transform.Translate(new Vector3(startPos.x - direction.x, 0.0f, 0.0f));
+								deltaX += Mathf.Abs(direction.x - startPos.x);
+								//testText.text = deltaX.ToString();
+								direction = startPos;
+								
+							}
+							break;
+						case TouchPhase.Stationary:
+							if (hitObject.transform.name != "ChipBlock")
+							{
+								hitObject = hitObject.transform.parent.gameObject;
+							}
+							//testText.text = "stationary";
+							hitObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+							break;
+						case TouchPhase.Ended:
+							//testText.text = "phase end";
+							if(deltaX > 0.2f)
+							{
+								//testText.text = "> 0.2";
+								hitObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+							}
+							else
+							{
+								//testText.text = "else";
+								Chip hitChip = allChips.FindChipByName(hitObject.name);
+
+								if (hitChip != null)
+								{
+									if (hitObject.transform.parent.name == "ChipBlock")
+									{
+										UpdateBet(hitChip.ChipValue, true, hitChip);
+									}
+									if (currentBet <= 0)
+									{
+										betButton.gameObject.SetActive(false);
+										EnableRedoBet();
+									}
+									else if (!betButton.gameObject.activeSelf)
+									{
+										betButton.gameObject.SetActive(true);
+										redoBetButton.gameObject.SetActive(false);
+									}
+								}
+							}
+							break;
+					}
+				}
+				else if(hitObject.transform.parent.name == "BetArea")
+				{
+					
+					Chip hitChip = allChips.FindChipByName(hitObject.name);
+					if(hitChip != null)
+					{
+						UpdateBet(hitChip.ChipValue, false, hitObject);
+					}
+					if (currentBet <= 0)
+					{
+						betButton.gameObject.SetActive(false);
+						EnableRedoBet();
+					}
+					else if (!betButton.gameObject.activeSelf)
+					{
+						betButton.gameObject.SetActive(true);
+						redoBetButton.gameObject.SetActive(false);
 					}
 				}
 			}
 		}
-		if(Input.anyKey)
+
+		/*else if (Input.touchCount == 1)
+		{
+			Touch touch = Input.GetTouch(0);
+			Ray ray = Camera.main.ScreenPointToRay(touch.position);
+			if (Physics.Raycast(ray, out RaycastHit hit, 100.0f))
+			{ 
+				GameObject hitObject = hit.collider.gameObject;
+				Chip hitChip = allChips.FindChipByName(hitObject.name);
+					
+				if (hitChip != null)
+				{
+					if(hitObject.transform.parent.name == "ChipBlock")
+					{
+						UpdateBet(hitChip.ChipValue, true, hitChip);
+					}
+					else if(hitObject.transform.parent.name == "BetArea")
+					{
+						UpdateBet(hitChip.ChipValue, false, hitObject);
+					}
+					if (currentBet <= 0)
+					{
+						betButton.gameObject.SetActive(false);
+						EnableRedoBet();
+					}
+					else if (!betButton.gameObject.activeSelf)
+					{
+						betButton.gameObject.SetActive(true);
+						redoBetButton.gameObject.SetActive(false);
+					}
+				}
+			}
+		}*/
+			
+		
+		/*if(Input.anyKey)
 		{
 			if(Input.GetMouseButtonDown(0))
 			{
@@ -211,7 +322,41 @@ public class GameManager : MonoBehaviour
 					}
 				}
 			}
-		}
+			/*else if(Input.GetMouseButtonDown(1))
+			{
+				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+				if (Physics.Raycast(ray, out RaycastHit hit, 100.0f))
+				{
+					GameObject hitObject = hit.collider.gameObject;
+					if (hitObject.transform.name == "ChipBlock" || hitObject.transform.parent.name == "ChipBlock")
+					{
+						if (hitObject.transform.name != "ChipBlock")
+						{
+							hitObject = hitObject.transform.parent.gameObject;
+						}
+						startPos = Input.mousePosition;
+					}
+				}
+			}
+			else if(Input.GetMouseButton(1))
+			{
+				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+				if (Physics.Raycast(ray, out RaycastHit hit, 100.0f))
+				{
+					GameObject hitObject = hit.collider.gameObject;
+					if (hitObject.transform.name == "ChipBlock" || hitObject.transform.parent.name == "ChipBlock")
+					{
+						if (hitObject.transform.name != "ChipBlock")
+						{
+							hitObject = hitObject.transform.parent.gameObject;
+						}
+						direction = Input.mousePosition - new Vector3(startPos.x, startPos.y);
+						hitObject.transform.Translate(new Vector3(chipMoveSpeed * direction.x * Time.deltaTime, 0.0f, 0.0f));
+						testText.text = hitObject.transform.position.x.ToString();
+					}
+				}
+			}
+		}*/
         
 	}
 
@@ -284,7 +429,6 @@ public class GameManager : MonoBehaviour
                 index * 12,
                 BetArea.transform.GetChild(index).transform.localPosition.z);
         }
-
         Destroy(chip);
 	}
 
@@ -614,7 +758,8 @@ public class GameManager : MonoBehaviour
             
 		}
 		creditText.text = ConvertToDollars(player.Credit);
-
+		saveAndLoad.Credit = player.Credit;
+		saveAndLoad.Save();
 		if (player.Credit <= 0)
 		{
 			gameOverImage.gameObject.SetActive(true);

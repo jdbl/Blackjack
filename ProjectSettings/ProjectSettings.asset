@@ -157,7 +157,7 @@ PlayerSettings:
     Standalone: com.Company.ProductName
   buildNumber: {}
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 16
+  AndroidMinSdkVersion: 19
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   aotOptions: 
@@ -680,10 +680,10 @@ PlayerSettings:
   facebookXfbml: 0
   facebookFrictionlessRequests: 1
   apiCompatibilityLevel: 6
-  cloudProjectId: 
+  cloudProjectId: b5373294-ae27-48d0-af5d-420eff210aa7
   framebufferDepthMemorylessMode: 0
-  projectName: 
-  organizationId: 
+  projectName: Blackjack
+  organizationId: jdbl_dev
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0

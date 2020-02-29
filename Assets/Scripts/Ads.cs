@@ -12,6 +12,7 @@ public class Ads : MonoBehaviour
     {
 		Advertisement.Initialize(gameId, testMode);
 		StartCoroutine(ShowBannerWhenReady());
+		
 	}
 
 	IEnumerator ShowBannerWhenReady()
@@ -26,3 +27,12 @@ public class Ads : MonoBehaviour
 		
 	}
 }
+
+
+/*bannerHeight = Camera.main.ScreenToWorldPoint(new Vector3(1, 50 * Screen.dpi / 160, 1)).y - Camera.main.ScreenToWorldPoint(new Vector3(1, 0, 1)).y;
+ 
+public float GetBannerHeight()
+{
+	return Mathf.RoundToInt(50 * Screen.dpi / 160);
+}
+	 */

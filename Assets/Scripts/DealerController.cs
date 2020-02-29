@@ -42,8 +42,9 @@ public class DealerController : MonoBehaviour
 	private List<GameObject> handPrefabs = new List<GameObject>();
     private Vector3 initialPosition = new Vector3();
 	private GameObject scoreText = null;
+	private GameObject handController = null;
 
-    private void Start()
+	private void Start()
     {
         initialPosition = transform.position;
     }
@@ -122,10 +123,12 @@ public class DealerController : MonoBehaviour
 	{
 		if (handPrefabs.Count == 0)
 		{
-			GameObject handController = new GameObject("dealerHandController");
+			handController = new GameObject("dealerHandController");
 			handController.transform.SetParent(this.transform);
+			//handController.transform.position = -(new Vector3(0.0f, 0.0f, Camera.main.ScreenToWorldPoint(new Vector3(0.0f, 0.0f, -(Screen.height - GetBannerHeight()))).z));
 			handController.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
-
+			Vector3 bannerHeight = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height, 7.74255f)) + Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height - GetBannerHeight(), 7.74255f));
+			handController.transform.Translate(0.0f, 0.0f, -bannerHeight.normalized.y);
 			CreateScoreText();
 		}
 
@@ -139,6 +142,7 @@ public class DealerController : MonoBehaviour
             this.transform.position = this.transform.position;
             this.transform.localPosition = this.transform.localPosition;
         }*/
+
 		UpdateScoreTextPosition();
 	}
 
@@ -207,8 +211,14 @@ public class DealerController : MonoBehaviour
 			}
 			
 			handPrefabs.Clear();
+			foreach (Transform child in this.transform)
+			{
+				Destroy(child.gameObject);
+			}
 		}
 		catch { }
+
+		this.transform.DetachChildren();
 	}
 
 	/// <summary>
@@ -253,5 +263,10 @@ public class DealerController : MonoBehaviour
 	public GameObject ScoreText
 	{
 		get { return scoreText; }
+	}
+
+	private float GetBannerHeight()
+	{
+		return Mathf.RoundToInt(50 * Screen.dpi / 160);
 	}
 }
