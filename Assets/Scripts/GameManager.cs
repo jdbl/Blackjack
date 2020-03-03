@@ -101,7 +101,7 @@ public class GameManager : MonoBehaviour
 	public static int deckNumbers = 1;
 	private bool playerTurn = true;
 	private bool insuranceBlackjack = false;
-	private const int STARTING_CREDIT = 10000;
+	private const int STARTING_CREDIT = 100;
 	private int lastBet = 0;
 	private bool canBet = false;
 	private int currentBet = 0;

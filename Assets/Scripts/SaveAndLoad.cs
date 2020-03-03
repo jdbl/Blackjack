@@ -5,17 +5,18 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-public class SaveAndLoad : MonoBehaviour
+public class SaveAndLoad
 {
     private bool showAds = true;
     private int credit = 0;
-	private DateTime lastPlayed = DateTime.Now;
+	public DateTime lastPlayed = DateTime.Now;
 	private bool[] consecutiveDaysPlayed;
-
+	private bool playedFullWeek = false;
+	private bool newDay = false;
 	public static SaveAndLoad control;
     private void Awake()
     {
-        if (control == null)
+		/*if (control == null)
         {
             DontDestroyOnLoad(gameObject);
             control = this;
@@ -23,8 +24,10 @@ public class SaveAndLoad : MonoBehaviour
         else if (control != this)
         {
             Destroy(gameObject);
-        }
-    }
+        }*/
+
+		control = this;
+	}
 
     public void Save()
     {
@@ -34,7 +37,7 @@ public class SaveAndLoad : MonoBehaviour
         PlayerData data = new PlayerData();
         data.ShowAds = showAds;
         data.Credit = credit;
-		data.LastPlayed = DateTime.Now;
+		data.LastPlayed = lastPlayed;
 		data.ConsecutiveDaysPlayed = consecutiveDaysPlayed;
 		bf.Serialize(file, data);
         file.Close();
@@ -53,6 +56,7 @@ public class SaveAndLoad : MonoBehaviour
 			lastPlayed = data.LastPlayed;
             credit = data.Credit;
             showAds = data.ShowAds;
+			UpdateDaysPlayed();
 			return true;
         }
 		return false;
@@ -63,16 +67,25 @@ public class SaveAndLoad : MonoBehaviour
 		DateTime current = DateTime.Now;
 		DateTime startOfWeek = current.AddDays(-(int)current.DayOfWeek);
 
-		if (current-lastPlayed > current-startOfWeek && lastPlayed != current)
+		if((current.DayOfYear - lastPlayed.DayOfYear) > 1)
 		{
 			consecutiveDaysPlayed = new bool[7];
+			consecutiveDaysPlayed[0] = true;
 			lastPlayed = current;
 		}
-		else
+		else if((current.DayOfYear - lastPlayed.DayOfYear) == 1)
 		{
-			consecutiveDaysPlayed[(int)current.DayOfWeek] = true;
+			consecutiveDaysPlayed[Array.IndexOf(consecutiveDaysPlayed, false)] = true;
 			lastPlayed = current;
-		}
+			credit += 10;
+			newDay = true;
+			if (Array.IndexOf(consecutiveDaysPlayed, false) == -1)
+			{
+				consecutiveDaysPlayed = new bool[7];
+				consecutiveDaysPlayed[0] = true;
+				credit += 40;
+			}
+		}	
 	}
 
 	public int Credit
@@ -90,6 +103,17 @@ public class SaveAndLoad : MonoBehaviour
 	{
 		get { return consecutiveDaysPlayed; }
 		set { consecutiveDaysPlayed = value; }
+	}
+
+	public bool NewDay
+	{
+		get { return newDay; }
+		set { newDay = value; }
+	}
+	public bool PlayedFullWeek
+	{
+		get { return playedFullWeek; }
+		set { playedFullWeek = value; }
 	}
 }
 

@@ -570,3 +570,5 @@ C:\Users\jebrown\Documents\repos\Blackjack\Temp\bin\Debug\UnityEngine.Advertisem
 C:\Users\jebrown\Documents\repos\Blackjack\Temp\bin\Debug\UnityEngine.Monetization.dll
 C:\Users\jebrown\Documents\repos\Blackjack\Temp\bin\Debug\UnityEngine.Monetization.pdb
 C:\Users\jebrown\Documents\repos\Blackjack\Temp\bin\Debug\UnityEngine.Advertisements.pdb
+C:\Users\jebrown\Documents\repos\Blackjack\Temp\bin\Debug\UDP.dll
+C:\Users\jebrown\Documents\repos\Blackjack\Temp\bin\Debug\UnityEngine.Purchasing.dll

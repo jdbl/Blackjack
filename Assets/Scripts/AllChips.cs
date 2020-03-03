@@ -17,7 +17,6 @@ public class AllChips : MonoBehaviour
 		for (int i = 0; i < chipPrefabs.Length; i++)
 		{
 			chips[i] = new Chip(chipPrefabs[i], chipValues[i]); 
-			
 		}
 	}
 
