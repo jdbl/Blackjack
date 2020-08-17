@@ -1,2 +1,2 @@
 # Blackjack
-Basic blackjack Unity game
+Blackjack game for Android in Unity
